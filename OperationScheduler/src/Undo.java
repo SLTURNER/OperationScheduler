@@ -20,7 +20,7 @@ public class Undo
 	
 	
 	/**
-	 * Accesssor, returns head
+	 * Accessor, returns head
 	 * @return    head as UndoNode
 	 */
 	public UndoNode getHead() 
@@ -45,7 +45,9 @@ public class Undo
 	 */
 	public UndoNode push(UndoNode n) 
 	{
-		
+		n.setNext(getHead());
+		setHead(n);
+		return n;
 	}
 	
 	/**
@@ -54,7 +56,10 @@ public class Undo
 	 */
 	public UndoNode pop() 
 	{
+		UndoNode n = getHead();
+		setHead(n.getNext());
 		
+		return n;
 		
 	}
 	
