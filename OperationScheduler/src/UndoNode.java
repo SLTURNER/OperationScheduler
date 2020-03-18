@@ -63,7 +63,8 @@ public class UndoNode
 	 * @param n    Next undoNode
 	 * @return     New UndoNode
 	 */
-	public UndoNode setNext(UndoNode n) {
+	public UndoNode setNext(UndoNode n) 
+	{
 		next = n;
 		return n;
 	}
@@ -72,7 +73,8 @@ public class UndoNode
 	 * Accessor, returns ID as integer
 	 * @return    ID as integer
 	 */
-	public int getID() {
+	public int getID() 
+	{
 		return id;
 	}
 	
@@ -80,7 +82,8 @@ public class UndoNode
 	 * Accessor, returns unchanged Object
 	 * @return     Object 
 	 */
-	public Object getObject() {
+	public Object getObject() 
+	{
 		return obj;
 	}
 	
@@ -88,7 +91,8 @@ public class UndoNode
 	 * Accessor, returns action taken as string. *Might be obsolete*
 	 * @return    Action as string
 	 */
-	public String getAction() {
+	public String getAction() 
+	{
 		return action;
 	}
 
