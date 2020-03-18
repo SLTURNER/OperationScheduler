@@ -60,7 +60,6 @@ public class Undo
 		setHead(n.getNext());
 		
 		return n;
-		
 	}
 	
 
