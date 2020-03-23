@@ -33,6 +33,19 @@ public class Scheduler
 	}
 	
 	/**
+	 * Will override current staffTree, with stored version.
+	 * @param n    New StaffTree
+	 * @return     Now overridden staffTree
+	 */
+	public StaffTree setStaff(Object n) 
+	{
+		StaffTree toReturn = getStaff();
+		staff = n;
+		
+		return toReturn;
+	}
+	
+	/**
 	 * Accessor, return Undo object
 	 * @return    undo Stack
 	 */
@@ -73,6 +86,46 @@ public class Scheduler
 	 */
 	public Object undo() 
 	{
+		UndoNode n = getUndo().pop();
+		
+		// If n is null, no item in UndoStack
+		if(n == null) 
+		{
+			return null;
+		}
+		else 
+		{			
+			// If ID is -1, then the stored Object is the StaffTree, as that means there is no appointment
+			if(n.getID() == -1) 
+			{	
+				Staff s = getStaff().find(n.getObjectID());
+				
+				// If staff is not in StaffTree, then it must have been deleted, so add it back
+				if(s == null) {
+					getStaff().add(n);
+					// Fill in blank
+					getRedo().push(new UndoNode(-1, n, "added"));
+					return n;
+				}
+				// Values of Staff must have been changed, so change them back.
+				else
+				{	
+					// Set constructor of Staff to duplicate values
+					Staff toReturn = new Staff(s);
+					
+					s.setName(n.getObject().getName());
+					s.setOffice(n.getObject().getOffice());
+					
+					getRedo().push(new UndoNode(-1, toReturn));
+					return toReturn;
+				}
+			}
+			else
+			{
+				// If stored object is an appointment. 
+				
+			}
+		}
 		
 	}
 	

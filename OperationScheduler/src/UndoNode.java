@@ -25,27 +25,23 @@ public class UndoNode
 	 * The constructor that will actually be used. Takes all field values at creation
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
-	 * @param n    Next node (getHead())
 	 */
-	public UndoNode(int i, Object o, UndoNode n) 
+	public UndoNode(int i, Object o) 
 	{
 		id = i;
 		obj = o;
-		next = n;
 	}
 	
 	/**
 	 * The constructor that will actually be used. Takes all field values at creation
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
-	 * @param n    Next node (getHead())
 	 */
-	public UndoNode(int i, Object o, String a, UndoNode n) 
+	public UndoNode(int i, Object o, String a) 
 	{
 		id = i;
 		obj = o;
 		action = a;
-		next = n;
 	}
 	
 	
@@ -70,7 +66,7 @@ public class UndoNode
 	}
 	
 	/**
-	 * Accessor, returns ID as integer
+	 * Accessor, returns ID of appointment as integer
 	 * @return    ID as integer
 	 */
 	public int getID() 
@@ -85,6 +81,15 @@ public class UndoNode
 	public Object getObject() 
 	{
 		return obj;
+	}
+	
+	/**
+	 * Accessor, returns unchanged Objects ID
+	 * @return     ID of Object as Integer
+	 */
+	public int getObjectiD() 
+	{
+		return obj.getID();
 	}
 	
 	/**

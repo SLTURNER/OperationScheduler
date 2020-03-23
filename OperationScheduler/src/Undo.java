@@ -56,10 +56,26 @@ public class Undo
 	 */
 	public UndoNode pop() 
 	{
-		UndoNode n = getHead();
-		setHead(n.getNext());
-		
-		return n;
+		if(!isEmpty()) 
+		{
+			UndoNode n = getHead();
+			setHead(n.getNext());
+			
+			return n;
+		}
+		return null;
+	}
+	
+	public boolean isEmpty() 
+	{
+		if(getHead() == null) 
+		{
+			return true;
+		}
+		else 
+		{
+			return false;
+		}
 	}
 	
 
