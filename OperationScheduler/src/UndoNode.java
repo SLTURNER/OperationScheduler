@@ -6,7 +6,8 @@
  */
 public class UndoNode 
 {
-	int id;
+	int aID;
+	int sID;
 	Object obj;
 	String action;
 	UndoNode next;
@@ -16,7 +17,8 @@ public class UndoNode
 	 */
 	public UndoNode() 
 	{
-		id = 0;
+		aID = 0;
+		sID = 0;
 		obj = null;
 		next = null;
 	}
@@ -26,9 +28,10 @@ public class UndoNode
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
 	 */
-	public UndoNode(int i, Object o) 
+	public UndoNode(int a, int s, Object o) 
 	{
-		id = i;
+		aID = a;
+		sID = s;
 		obj = o;
 	}
 	
@@ -37,9 +40,10 @@ public class UndoNode
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
 	 */
-	public UndoNode(int i, Object o, String a) 
+	public UndoNode(int a, int s, Object o, String a) 
 	{
-		id = i;
+		aID = a;
+		sID = s;
 		obj = o;
 		action = a;
 	}
@@ -69,9 +73,18 @@ public class UndoNode
 	 * Accessor, returns ID of appointment as integer
 	 * @return    ID as integer
 	 */
-	public int getID() 
+	public int getAID() 
 	{
-		return id;
+		return aID;
+	}
+	
+	/**
+	 * Accessor, returns ID of staff as integer
+	 * @return    ID as integer
+	 */
+	public int getSID() 
+	{
+		return sID;
 	}
 	
 	/**

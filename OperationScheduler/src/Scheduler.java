@@ -95,16 +95,17 @@ public class Scheduler
 		}
 		else 
 		{			
-			// If ID is -1, then the stored Object is the StaffTree, as that means there is no appointment
-			if(n.getID() == -1) 
+			Staff s = getStaff().find(n.getSID());
+			
+			// If AID is -1, then the stored Object is the StaffTree, as that means there is no appointment
+			if(n.getAID() == -1) 
 			{	
-				Staff s = getStaff().find(n.getObjectID());
 				
 				// If staff is not in StaffTree, then it must have been deleted, so add it back
 				if(s == null) {
 					getStaff().add(n);
 					// Fill in blank
-					getRedo().push(new UndoNode(-1, n, "added"));
+					getRedo().push(new UndoNode(-1, n.getSID(), n, "added"));
 					return n;
 				}
 				// Values of Staff must have been changed, so change them back.
@@ -116,13 +117,43 @@ public class Scheduler
 					s.setName(n.getObject().getName());
 					s.setOffice(n.getObject().getOffice());
 					
-					getRedo().push(new UndoNode(-1, toReturn));
+					getRedo().push(new UndoNode(-1, toReturn.getID(), toReturn));
 					return toReturn;
 				}
 			}
 			else
 			{
 				// If stored object is an appointment. 
+				Appointment a = s.findAppointment(n.getAID());
+				
+				// If appointment is null, it has been deleted
+				if(a == null) 
+				{
+					// Add it back
+					s.newAppointment(n.getObject());
+					
+					// Push newly added node to redo stack
+					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n, "Added"));
+					return n;
+				}
+				else
+				{
+					// If Appointment is still in set, update it
+					
+					// Make copy of Appointment stored, to add to redo stack
+					Appointment toReturn = new Appointment(a);
+					
+					// Copy values from undo stack to appointment set
+					a.setStart(n.getObject().getStart());
+					a.setDuration(n.getObject().getDuration());
+					a.setDescription(n.getObject().getDescription());
+					a.setLocation(n.getObject().getLocation());
+					a.setHidden(n.getObject().getHidden());
+					
+					
+					getRedo().push(new UndoNode(toReturn.getID(), s.getID(), toReturn, "Edited"));
+					return toReturn;
+				}
 				
 			}
 		}
