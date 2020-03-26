@@ -51,6 +51,37 @@ public class Undo
 	}
 	
 	/**
+	 * Used for when changes have been made to appointments
+	 * 
+	 * @param s    Reference to changed Staff Object (Copied internally)
+	 * @param a    Action performed as String
+	 * @return     UndoNode containing all appropriate values
+	 */
+	public UndoNode push(Staff s, String a) 
+	{
+		UndoNode n = new UndoNode(-1, s.getID(), new Staff(s), a);
+		n.setNext(getHead());
+		setHead(n);
+		return n;
+	}
+	
+	/**
+	 * Used for when changes have been made to appointments
+	 * 
+	 * @param staffID    Integer ID of staff
+	 * @param s    Reference to changed Appointment (Copy of Appointment made internally)
+	 * @param a    Action performed as String
+	 * @return     UndoNode containing all appropriate values
+	 */
+	public UndoNode push(int staffID, Appointment s, String a) 
+	{
+		UndoNode n = new UndoNode(s.getID(), staffID, new Appointment(s), a);
+		n.setNext(getHead());
+		setHead(n);
+		return n;
+	}
+	
+	/**
 	 * Will pop top node in stack
 	 * @return    top node
 	 */
