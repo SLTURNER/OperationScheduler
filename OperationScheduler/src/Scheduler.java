@@ -103,22 +103,34 @@ public class Scheduler
 				
 				// If staff is not in StaffTree, then it must have been deleted, so add it back
 				if(s == null) {
-					getStaff().add(n);
-					// Fill in blank
-					getRedo().push(new UndoNode(-1, n.getSID(), n, "added"));
+					getStaff().add(n.getObject());
+					
+					getRedo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
 					return n;
 				}
 				// Values of Staff must have been changed, so change them back.
 				else
 				{	
-					// Set constructor of Staff to duplicate values
-					Staff toReturn = new Staff(s);
+					// If all fields hve the same values, then the previous operation was an add of the current object to tree, so delete it
+					if(s.getName().equals(n.getObject().getName()) && s.getOffice().equals(n.getObject().getOffice())) 
+					{
+						getStaff().delete(n.getSID());
+						
+						getRedo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
+						return s;
+					}
+					else 
+					{
+						// Set constructor of Staff to duplicate values
+						Staff toReturn = new Staff(s);
+						
+						s.setName(n.getObject().getName());
+						s.setOffice(n.getObject().getOffice());
+						
+						getRedo().push(new UndoNode(-1, toReturn.getID(), toReturn, "Edited"));
+						return toReturn;
+					}
 					
-					s.setName(n.getObject().getName());
-					s.setOffice(n.getObject().getOffice());
-					
-					getRedo().push(new UndoNode(-1, toReturn.getID(), toReturn));
-					return toReturn;
 				}
 			}
 			else
@@ -133,12 +145,24 @@ public class Scheduler
 					s.newAppointment(n.getObject());
 					
 					// Push newly added node to redo stack
-					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n, "Added"));
+					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
 					return n;
 				}
 				else
 				{
-					// If Appointment is still in set, update it
+					// If Appointment is still in set, check if values math UndoStack object
+					
+					if(a.getStart().compareTo(n.getObject().getStart()) == 0 && a.getDuration().compareTo(n.getObject().getDuration()) 
+						&& a.getDesicription().equals(n.getObject().getDescription()) && a.getLocation().equals(n.getObject().getLocation())
+						&& a.getHidden() == n.getObject().getHidden()) 
+						
+					{
+						s.deleteAppointment(a.getID());
+						
+						getRedo().push( new UndoNode(a.getID(), s.getID(), a, "Deleted"));
+						
+						return a;
+					}
 					
 					// Make copy of Appointment stored, to add to redo stack
 					Appointment toReturn = new Appointment(a);
@@ -166,6 +190,88 @@ public class Scheduler
 	 */
 	public Object redo() 
 	{
+		UndoNode n = getRedo().pop();
+		Staff s = getStaff().find(n.getSID());
+		
+		// If Appointment ID is negative, it doesnt exist, therefore the object is Staff
+		if(n.getAID() < 0) 
+		{
+			switch(n.getAction()) 
+			{
+				case "Added":
+					getStaff().delete(n.getSID());
+					
+					getUndo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
+					return s;
+					
+					break;
+					
+				case "Deleted":
+					getStaff().add(n);
+					
+					getUndo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
+					return n;
+					
+					break;
+					
+				case "Edited":
+					Staff toReturn = new Staff(s);
+					
+					s.setName(n.getObject().getName());
+					s.setOffice(n.getObject().getOffice());
+					
+					getUndo().push(new UndoNode(-1, toReturn.getID(), toReturn, "Edited"));
+					return toReturn;
+					
+					break;
+					
+				default:
+					break;
+			}
+		}
+		else 
+		{
+			Appointment a = s.findAppointment(n.getAID());
+			
+			switch(n.getAction()) 
+			{
+				case "Added":
+					s.deleteAppointment(a.getID());
+					
+					getUndo().push( new UndoNode(a.getID(), s.getID(), a, "Deleted"));
+					
+					return a;					
+					break;
+					
+				case "Deleted":
+					// Add it back
+					s.newAppointment(n.getObject());
+					
+					// Push newly added node to redo stack
+					getUndo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
+					return n;
+					break;
+					
+				case "Edited":
+					// Make copy of Appointment stored, to add to redo stack
+					Appointment toReturn = new Appointment(a);
+					
+					// Copy values from undo stack to appointment set
+					a.setStart(n.getObject().getStart());
+					a.setDuration(n.getObject().getDuration());
+					a.setDescription(n.getObject().getDescription());
+					a.setLocation(n.getObject().getLocation());
+					a.setHidden(n.getObject().getHidden());
+					
+					
+					getUndo().push(new UndoNode(toReturn.getID(), s.getID(), toReturn, "Edited"));
+					return toReturn;
+					break;
+					
+				default:
+					break;
+			}
+		}
 		
 	}
 	
