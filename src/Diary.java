@@ -110,10 +110,15 @@ public class Diary {
 	
 	public void displayBookedAppointments()
 	{
+		
+		
 		for (int i = 0;i<appointment.size();i++)
 		{
-			System.out.println(appointment.get(i).getStart() + " until " +  appointment.get(i).getEnd());
-		}
+			if(!"".equals(appointment.get(i).getLocation()) && !"".equals(appointment.get(i).getDescription()))
+			{
+			System.out.println(appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation());
+			}
+			}
 	}
 	
 	

@@ -57,6 +57,11 @@ public class Appointment {
 		return location;
 	}
 	
+	public int getDuration()
+	{
+		return duration;
+	}
+	
 	
 	private void endSlotCal(Date start)
 	

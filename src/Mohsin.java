@@ -7,40 +7,81 @@ public class Mohsin {
 		
 		test01.test();
 		
-		
+		//book appointment *2
+		// check overlap
+		//print appointments
+		//delte appointment 
+		//cancel appointment
+		//print appointments
 	}
 	
 	public void test()
 	{
-		//create diary for staff member
-		Diary diary01 = new Diary("Staff_Name");
 		
-		//create an appointment slot 
-		Appointment slot1 = new Appointment("28/03/20 12:00:00", 30);
+		Diary diary01 = new Diary("staffName");
+		
+		//creating a slot for the appointments
+	    Appointment slot1 = new Appointment("28/08/15 09:00:00", 30);
 	    boolean flag = diary01.initAppointment(slot1);
 	    
-	    //checking that the slot isn't already taken up
-	    //expected outcome: available 
+	    //expected outcome: successful
 	    if(flag)
-	        System.out.println(slot1 + " available");
-	      else
-	        System.out.println(slot1 + " is taken");
+	    {
+	      System.out.println(slot1 + " successfully created");
+	    }
+	    else
+	    {
+	      System.out.println(slot1 + " already exists");
+	    }
 	    
-	    //book an appointment for heart surgery
-	    flag = diary01.bookAppointment("Heart Surgery", "Monklands", "28/03/20 12:00:00", 30);
+	    Appointment slot2 = new Appointment("28/08/15 09:15:00", 45);
+	    flag = diary01.initAppointment(slot2);
+
+	    //Expected output: unsuccessful
+	    if(flag)
+	      System.out.println(slot2 + "successfully created");
+	    else
+	      System.out.println(slot2 + " cannot be created");
 	    
-	    //checking if the appointment can be booked
-	    //expected outcome: appointment booked
+	    Appointment slot3 = new Appointment("28/08/15 17:00:00", 25);
+	    flag = diary01.initAppointment(slot3);
+
+	    //Expected output: successful
+	    if(flag)
+	      System.out.println(slot3 + " successfully created");
+	    else
+	      System.out.println(slot3 + " cannot be created");
+	    
+	    
+	    //booking appointment in pre-made slot
+	    flag = diary01.bookAppointment("sore head", "monklands", "28/08/15 09:00:00", 30);
+
+	    // Expected output: successful
 	    if(flag)
 	      System.out.println("Appointment successfully booked");
 	    else
 	      System.out.println("Appointment cannot be booked");
-		
-		
-		
-		
 	    
+	  //booking appointment in pre-made slot
+	    flag = diary01.bookAppointment("itchy scalp", "royal infirmary", "28/08/15 17:00:00", 25);
+
+	    // Expected output: successful
+	    if(flag)
+	      System.out.println("Appointment successfully booked");
+	    else
+	      System.out.println("Appointment cannot be booked");
 	    
+	    		System.out.println();
+	    
+		//displays the booked appointments 
+	    diary01.displayBookedAppointments();
+	    
+	    System.out.println();
+	    
+	    //deleting an appointment using its start time
+	    flag = diary01.deleteAppointment("28/08/15 17:00:00");
+	    
+	    //redisplaying appointments
 	    diary01.displayBookedAppointments();
 	}
 }
