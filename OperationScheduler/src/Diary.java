@@ -11,12 +11,16 @@ public class Diary {
 	ArrayList<Appointment> appointment;
 	int slot;
 	
+	
+	
 	public Diary(String name)
 	{
 		this.patientName = name;
 		
 		slot = 0;
 	}
+	
+	
 	
 	public boolean initAppointment(Appointment appointmentSlot)
 	{
@@ -36,11 +40,11 @@ public class Diary {
 			{
 				if( (appointment.get(i).getEnd().compareTo(appointmentSlot.getStart())<0))
 				{
-					flag =1;
+					flag = 1;
 				}
 			}
 			
-			if (flag ==1)
+			if (flag == 1)
 			{
 				appointment.add(appointmentSlot);
 				return true;
@@ -49,6 +53,7 @@ public class Diary {
 		
 		return false;
 	}
+	
 	
 	public boolean bookAppointment(String description, String location, String date, int duration)
 	{
@@ -90,6 +95,7 @@ public class Diary {
 		    return false;
 	}
 	
+	
 	public boolean deleteAppointment(String date) {
 	    Date date01 = new Date();
 	    SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
@@ -106,12 +112,12 @@ public class Diary {
 	      }
 	    }
 	    return false;
-	  }
+	}
+	
 	
 	public void displayBookedAppointments()
 	{
-		
-		
+				
 		for (int i = 0;i<appointment.size();i++)
 		{
 			if(!"".equals(appointment.get(i).getLocation()) && !"".equals(appointment.get(i).getDescription()))
