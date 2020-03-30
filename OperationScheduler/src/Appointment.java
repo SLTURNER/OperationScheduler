@@ -80,8 +80,9 @@ public class Appointment {
 		duration = a.getDuration();
 		end = a.getEnd();
 		description = a.getDescription();
-		location = a.getLocation()
+		location = a.getLocation();
 		id = a.getID();
+		hidden = a.getHidden();
 		
 	}
 	
