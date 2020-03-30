@@ -11,6 +11,8 @@ public class Appointment {
 	private String description;
 	private String location;
 	private int id;
+	private boolean hidden;
+	
 	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
 	
 	public Appointment(String date,  int duration)
