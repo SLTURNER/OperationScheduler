@@ -6,26 +6,27 @@ import java.util.Date;
 
 public class Diary {
 	
-	private String patientName;
+	private String staffName;
 	
 	ArrayList<Appointment> appointment;
 	int slot;
 	
 	public Diary(String name)
 	{
-		this.patientName = name;
+		this.staffName = name;
 		
 		slot = 0;
 	}
 	
-	public boolean initAppointment(Appointment appointmentSlot)
+	public boolean initAppointment(String date,  int duration, String description, String location)
 	{
+		Appointment appSlot = new Appointment(date, duration, description, location);
 		int flag = 0;
 		
 		if(slot == 0)
 		{
-			appointment = new ArrayList<Appointment>();
-			appointment.add(appointmentSlot);
+			
+			appointment.add(appSlot);
 			slot++;
 			
 			return true;
@@ -34,15 +35,16 @@ public class Diary {
 		{
 			for(int i = 0; i<appointment.size(); i++)
 			{
-				if( (appointment.get(i).getEnd().compareTo(appointmentSlot.getStart())<0))
+				if( (appointment.get(i).getEnd().compareTo(appSlot.getStart())<0))
 				{
-					flag =1;
+					flag = 1;
 				}
 			}
 			
-			if (flag ==1)
+			if (flag == 1)
 			{
-				appointment.add(appointmentSlot);
+				appointment.add(appSlot);
+				bookAppointment(date, duration, description, location);
 				return true;
 			}
 		}
@@ -50,7 +52,7 @@ public class Diary {
 		return false;
 	}
 	
-	public boolean bookAppointment(String description, String location, String date, int duration)
+	public boolean bookAppointment(String date,  int duration, String description, String location)
 	{
 		int flag = 0;
 		
@@ -72,7 +74,7 @@ public class Diary {
 		for (int i =0; i< appointment.size(); i++)
 		{
 			if ( date01.equals(appointment.get(i).getStart())) {
-		        //System.out.print("true");
+		        
 		        temp = i;
 		        flag = 1;
 		      }
