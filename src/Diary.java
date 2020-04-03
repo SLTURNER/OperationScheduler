@@ -1,6 +1,5 @@
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +11,7 @@ import java.util.Date;
  *Class to hold and perform operations on appointments
  */
 public class Diary {
+	
 	private String staffName;
 	ArrayList<Appointment> appointment;
 	
@@ -22,9 +22,9 @@ public class Diary {
 	public Diary(String name)
 	{
 		this.staffName = name;
-		
-		
 	}
+	
+	
 	/**
 	 * 
 	 * @param date - start date of appointment
@@ -35,13 +35,14 @@ public class Diary {
 	 */
 	public boolean addAppointment(String date, int duration, String description, String location)
 	{
-		
+		//initialise start date and current date
 		Date startDate = new Date();
-		
 		Date current = new Date();
 		
+		//construct new appointment
 		Appointment holder = new Appointment(date, duration, description, location);
 		
+		//parse string into Date data type
 		startDate = dateParser(date);
 		
 		//checking if string of date input is valid
@@ -94,9 +95,11 @@ public class Diary {
 	public Date dateParser(String date)
 	{
 		Date parsedDate = new Date();
+		
+		//declaring date format to be used
 		SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
 		
-		
+		//handling exceptions
 		try {
 		      parsedDate = form.parse(date);
 		    } 
@@ -105,6 +108,7 @@ public class Diary {
 		      System.out.println();  
 		    }
 		
+		//returning date once parsed
 		return parsedDate;
 	}
 	
@@ -122,6 +126,7 @@ public class Diary {
 		//calculation to get end time
 		end.setTime(min + (duration * 60 * 1000));
 		
+		//return end date once calculated
 		return end;
 	}
 	
@@ -133,16 +138,15 @@ public class Diary {
 		//check to see if there are appointments to be printed
 		if(appointment !=null)
 		{
+			//sorting appointments by date
 			sortAppointments();
 			
 			System.out.println("\tThe following appointments have been booked for " + staffName );
-		
+				
+				//looping over all existing appointments
 				for (int i = 0;i<appointment.size();i++)
 				{
-					if(!"".equals(appointment.get(i).getLocation()) && !"".equals(appointment.get(i).getDescription()))
-					{
 						System.out.println("--" + appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation() + "--");
-					}
 				}
 		}
 		//if no appointments have been booked
@@ -179,11 +183,13 @@ public class Diary {
 		{
 			for(int i = 0;i<appointment.size();i++)
 			{
+				//ensuring all existing dates in the arraylist are checked against
 				primeStart = appointment.get(i).getStart();
 				primeEnd = appointment.get(i).getEnd();
 			
 				if(startDate.before(primeEnd) && primeStart.before(endDate))
 				{
+					//counter increases if there are any clashes
 					counter++;
 				}
 			}
@@ -195,6 +201,7 @@ public class Diary {
 			System.out.println("Clash detected. Appointment not booked.");
 			return true;
 		}
+		//if no clashes have occurred
 		else
 		{
 			return false;
@@ -216,9 +223,11 @@ public class Diary {
 	    {
 		    for (int i = 0; i < appointment.size(); i++) 
 		    {
-		      
+		    	/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants deleted as only one appointment can start at any given time*/
 		    	if (date01.equals(appointment.get(i).getStart())) 
 		    	{
+		    		//removal of the appointment found
 		    		appointment.remove(i);
 		    		return true;
 		    	}
@@ -246,7 +255,8 @@ public class Diary {
 	    {	//going through all the appointments
 		    for (int i = 0; i < appointment.size(); i++) 
 		    {
-		      
+		    	/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
 		    	if (date01.equals(appointment.get(i).getStart())) 
 		    	{
 		    		appointment.get(i).setDescription(newDescription);;
@@ -295,16 +305,21 @@ public class Diary {
 	    date01 = dateParser(date);
 	    int found = 0;
 	    
-	    
+	    //preventing null pointer exception
 	    if(appointment != null)
 	    {
+	    	//going through all existing appointments
 			for (int i = 0;i<appointment.size();i++)
 			{
+				/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
 				if(appointment.get(i).getStart().equals(date01))
 				{
 					System.out.println("\tFound:");
-				System.out.println("--" + appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation() + "--");
-				found++;
+					System.out.println("--" + appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation() + "--");
+				
+					//counter increases if appointment is found
+					found++;
 				}
 				
 			}
@@ -334,24 +349,29 @@ public class Diary {
 	    dateStart = dateParser(start);
 	    dateEnd = dateParser(end);
 	    
+	    //preventing null pointer exception and checking that the dates are entered in the correct ordered
 	    if(appointment !=null && dateEnd.after(dateStart))
 	    {
 	    	System.out.println();
 	    	System.out.println("Appointments from " + start + " to " + end);
+	    	
+	    	//going through all appointments
 	    	for (int i = 0;i<appointment.size();i++)
 			{
+	    		//printing appointments only in specified range
 				if(appointment.get(i).getStart().after(dateStart) && appointment.get(i).getEnd().before(dateEnd))
 				{
 					System.out.println("--" + appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation() + "--");
-					
 				}
 			}
 	    }
 	    
+	    //if there are no appointments
 	    if(appointment == null )
 	    {
 	    	System.out.println("There are no appointments to look through");
 	    }
+	    //if the dates are incorrect order
 	    else if(dateStart.after(dateEnd))
 	    {
 	    	System.out.println("The start date must come before the end date");
@@ -365,7 +385,8 @@ public class Diary {
 	{
 		if(appointment == null)
 		{
-			
+			//do nothing if appointment is null
+			//preventing null pointer exceptions
 		}
 		else
 		{
@@ -378,15 +399,21 @@ public class Diary {
 	 * @param date - string of date to be parsed
 	 * @return true if the date can be parsed, false otherwise
 	 */
-	public boolean isValidDate(String date) {
+	public boolean isValidDate(String date) 
+	{
+		//defining format of date to be entered
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        dateFormat.setLenient(true);
+        //dateFormat.setLenient(true);
         
-        try {
+        //handling invalid input exceptions
+        try 
+        {
+        	//parsing string date and trimming string date, i.e. getting rid of surrounding spaces
             dateFormat.parse(date.trim());
         } 
         catch (ParseException e) 
         {
+        	//if string date cannot be parsed
             return false;
         }
         return true;

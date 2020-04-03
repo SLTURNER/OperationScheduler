@@ -18,6 +18,7 @@ public class Appointment {
 	private String location;
 	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
 	
+	
 	/**
 	 * Constructor
 	 * @param date - the start date and time of appointment
