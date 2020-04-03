@@ -1,16 +1,23 @@
 import java.util.Scanner;
 
+/**
+ * Class to test methods from Diary class
+ *@author Mohsin Raza
+ *@version 03/04/2020
+ */
 public class Test {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
 		Test exe = new Test();
-		
 		exe.run();
 
 	}
 	
+	/**
+	 * method to test methods from diary class
+	 */
 	public void run()
 	{
 		Diary diary01 = new Diary("Dr Hamlin");
@@ -19,7 +26,6 @@ public class Test {
 		String durationPrompt = "How long will will this appointment last, in minutes";
 		String locationPrompt = "Where is this appointment";
 		String descriptionPrompt = "What is the purpose of this appointment";
-		
 		
 		//adding appointment via userPrompts
 		diary01.addAppointment(getString(datePrompt), getInt(durationPrompt), getString(descriptionPrompt), getString(locationPrompt));
@@ -59,6 +65,12 @@ public class Test {
 		diary01.printApp();
 	}
 	
+	
+	/**
+	 * 
+	 * @param userPrompt - output relevant message to user
+	 * @return userInput
+	 */
 	public int getInt(String userPrompt)
 	{
 		Scanner s = new Scanner(System.in);
@@ -71,10 +83,15 @@ public class Test {
 		}
 		
 		int num = s.nextInt();
-	
 		return num;
 	}
 	
+	
+	/**
+	 * 
+	 * @param userPrompt - output relevant message to user
+	 * @return user input
+	 */
 	public String getString(String userPrompt)
 	{
 		Scanner myObj = new Scanner(System.in);
@@ -84,6 +101,4 @@ public class Test {
 		
 		return userInput;
 	}
-	
-
 }

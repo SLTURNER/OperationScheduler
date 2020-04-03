@@ -87,6 +87,7 @@ public class Diary {
 		}
 	}
 	
+	
 	/**
 	 * 
 	 * @param date - start date of appointment
@@ -112,6 +113,7 @@ public class Diary {
 		return parsedDate;
 	}
 	
+	
 	/**
 	 * 
 	 * @param start - start date of appointment
@@ -129,6 +131,7 @@ public class Diary {
 		//return end date once calculated
 		return end;
 	}
+	
 	
 	/**
 	 * Prints the booked appointments
@@ -155,6 +158,7 @@ public class Diary {
 			System.out.println("No Appointments have been booked for " + staffName);
 		}
 	}
+	
 	
 	/**
 	 * 
@@ -208,6 +212,7 @@ public class Diary {
 		}
 	}
 	
+	
 	/**
 	 * 
 	 * @param start date of appointment
@@ -240,6 +245,7 @@ public class Diary {
 		return false;
 	}
 	
+	
 	/**
 	 * 
 	 * @param date - start date of appointment
@@ -271,6 +277,7 @@ public class Diary {
 		return false;
     }
 	
+	
 	/**
 	 * 
 	 * @param date - start date of appointment to be edited
@@ -293,6 +300,7 @@ public class Diary {
 	    }
 	    	return false;
 	}
+	
 	
 	/**
 	 * 
@@ -321,7 +329,6 @@ public class Diary {
 					//counter increases if appointment is found
 					found++;
 				}
-				
 			}
 	    }
 		
@@ -335,6 +342,7 @@ public class Diary {
 			return false;
 		}
 	}
+	
 	
 	/**
 	 * 
@@ -378,6 +386,7 @@ public class Diary {
 	    }
 	}
 	
+	
 	/**
 	 * Wrapper method to sort appointments by date
 	 */
@@ -390,9 +399,11 @@ public class Diary {
 		}
 		else
 		{
+			//sort the arraylist by date
 			Collections.sort(appointment,byDate);
 		}
 	}
+	
 	
 	/**
 	 * Checks if the string entered can be parsed
@@ -419,6 +430,7 @@ public class Diary {
         return true;
     }
 	
+	
 	/**
 	 * Comparator to aid in sorting arraylist of appointments by date
 	 * 	Sourced from stack overflow
@@ -439,5 +451,4 @@ public class Diary {
 	       return (date01.getTime() > date02.getTime() ? 1 : -1);     
 	    }
     };
-	
 }
