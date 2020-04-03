@@ -16,8 +16,7 @@ public class Appointment {
 	private Date end;
 	private String description;
 	private String location;
-	private int ID;
-	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
 	
 	/**
 	 * Constructor
@@ -40,7 +39,7 @@ public class Appointment {
 		
 		this.duration = duration;
 		
-		endSlotCal(start);
+		end = calculateEnd(start);
 		
 		this.description = description;
 		this.location = location;
@@ -101,11 +100,11 @@ public class Appointment {
 	 * Calculates the end time of the appointment
 	 * @param start - of appointment
 	 */
-	private void endSlotCal(Date start)
+	private Date calculateEnd(Date start)
 	{
 		long min = start.getTime();
 		end.setTime(min + (duration * 60 * 1000));
-		System.out.println(end);
+		return end;
 	}
 	
 	
@@ -134,9 +133,9 @@ public class Appointment {
 	 */
 	public String toString() 
 	{
-	    String str = "";
-	    str = str + form.format(start) + " for " + duration + " minutes";
-	    return str;
+	    String string = "";
+	    string = string + form.format(start) + " for " + duration + " minutes";
+	    return string;
 	 }
 
 	
