@@ -27,7 +27,7 @@ public class Diary {
 	
 	
 	/**
-	 * 
+	 *  Will, given the time and duration, check if the slot is taken, if not, will add Appointment to ArrayList
 	 * @param date - start date of appointment
 	 * @param duration - duration of appointment in minutes
 	 * @param description - of appointment
