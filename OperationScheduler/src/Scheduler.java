@@ -1,13 +1,19 @@
+  
+import java.util.Scanner;
+
 public class Scheduler 
 {
 	StaffTree staff;
 	Undo undo;
 	Undo redo;
+	
+	Scanner s = new Scanner(System.in);
 
 	
 	public static void main(String[] args) 
 	{
-		// TODO Auto-generated method stub
+		Scheduler s = new Scheduler();
+		s.processSelection();
 
 	}
 	
@@ -88,14 +94,58 @@ public class Scheduler
 		print("J.    Load from file");
 		print("K.    Undo previous action");
 		print("L.    Redo last undone action");
+		print("Z.    Exit");
 	}
 	
 	/**
 	 * Will take user input, and call appropriate methods
 	 */
 	public void processSelection() 
-	{
-		
+	{	
+		boolean exit = false;
+		while(exit == false) 
+		{
+			try 
+			{
+				switch(s.next()) 
+				{
+				case "A":
+				case "a":
+					displayAppointments();
+					break;
+				
+				case "B":
+				case "b":
+					displayStaff();
+					print("Please type the ID of the staff you want to see tasks for");
+					displayTasklist(s.nextInt());
+					break;
+				
+				case "C":
+				case "c":
+					
+					displayStaff();
+					print("What ID should the new Staff have");
+					int staffID = s.nextInt();
+					
+					print("When would you like to book an appointment? (Format should be: dd/MM/yy HH:mm)");
+					String start = s.nextLine();
+					
+					print("How long will the appointment last?");
+					int duration = s.nextInt();
+					
+					//newAppointment(int staffID, String start, int duration, String description, String location, boolean hidden) 
+					break;
+				}
+				
+				
+				
+			}
+			catch(Exception e) 
+			{
+				print(e.getMessage());
+			}
+		}
 	}
 	
 	/**
