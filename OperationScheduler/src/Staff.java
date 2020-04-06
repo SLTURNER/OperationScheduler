@@ -1,6 +1,3 @@
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Class for Staff
  * @author Lubo Tsenkov
@@ -17,7 +14,7 @@ public class Staff {
 //	private Diary diary;
 	private String office;
 
-	private Set<Appointment> diary;
+	private Diary diary;
 
 
     /**
@@ -31,7 +28,35 @@ public class Staff {
         this.office = "";
         this.left = null;
         this.right = null;
-        this.diary = new HashSet<Appointment>();
+        this.diary = new Diary(getName());
+    }
+    
+    /**
+     * Constructor for objects of class Staff
+     */
+    public Staff(String name, String office, int id)
+    {
+        // initialise instance variables
+        this.Id = id;
+        this.name = name;
+        this.office = office;
+        this.left = null;
+        this.right = null;
+        this.diary = new Diary(getName());
+    }
+    
+    /**
+     * Constructor to deep copy a staff object
+     */
+    public Staff(Staff temp)
+    {
+        // initialise instance variables
+        this.Id = temp.getId();
+        this.name = temp.getName();
+        this.office = temp.getOffice();
+        this.left = null;
+        this.right = null;
+        this.diary = temp.getDiary();
     }
     
      /**
@@ -144,5 +169,66 @@ public class Staff {
         info = "Staff " + name + " is in office" + office;
         
         return info;
+    }
+    
+    /**
+     * Returns reference to diary
+     * @return    diary as Diary
+     */
+    public Diary getDiary() 
+    {
+    	return diary;
+    }
+    
+    /**
+     * Wrapper method, to serach for appointment by ID
+     * @param id    Search parameter
+     * @return     Found Appointment
+     */
+    public Appointment searchAppointment(int id) 
+    {
+    	return getDiary().searchAppointment(id);
+    }
+    
+    /**
+     *  Adds appointment by node to Diary
+     * @param toAdd    New node
+     * @return    New node
+     */
+    public Appointment addAppointment(Appointment toAdd) 
+    {
+    	return getDiary().addAppointment(toAdd);
+    }
+    
+    public Appointment deleteAppointment(Appointment toDelete) 
+    {
+    	return getDiary().deleteAppointment(toDelete.getStart());
+    }
+    
+    /**
+     * Adds new appointment to Diary
+     * @param date    Start date
+     * @param duration    Duration of appointment
+     * @param description    Appointment description
+     * @param location    Appointment locaiton
+     * @param hidden    Is task or appointment
+     * @return    New appointment
+     */
+    public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden) 
+    {
+    	Appointment added = getDiary().addAppointment(date, duration, description, location, hidden);
+    	
+    	return getDiary().searchAppointment(added.getID());
+    }
+    
+    /**
+     * Prints tasklist
+     */
+    public void printTaskList() {
+    	getDiary().printTaskList();
+    }
+    
+    public void printApppointments() {
+    	getDiary().printApp();
     }
 }

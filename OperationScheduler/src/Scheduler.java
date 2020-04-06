@@ -1,4 +1,3 @@
-
 public class Scheduler 
 {
 	StaffTree staff;
@@ -40,7 +39,7 @@ public class Scheduler
 	public StaffTree setStaff(Object n) 
 	{
 		StaffTree toReturn = getStaff();
-		staff = n;
+		staff = (StaffTree) n;
 		
 		return toReturn;
 	}
@@ -95,7 +94,7 @@ public class Scheduler
 		}
 		else 
 		{			
-			Staff s = getStaff().find(n.getSID());
+			Staff s = getStaff().findInTree(n.getSID());
 			
 			// If AID is -1, then the stored Object is the StaffTree, as that means there is no appointment
 			if(n.getAID() == -1) 
@@ -103,7 +102,7 @@ public class Scheduler
 				
 				// If staff is not in StaffTree, then it must have been deleted, so add it back
 				if(s == null) {
-					getStaff().add(n.getObject());
+					getStaff().addTree((Staff)n.getObject());
 					
 					getRedo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
 					return n;
@@ -111,8 +110,8 @@ public class Scheduler
 				// Values of Staff must have been changed, so change them back.
 				else
 				{	
-					// If all fields hve the same values, then the previous operation was an add of the current object to tree, so delete it
-					if(s.getName().equals(n.getObject().getName()) && s.getOffice().equals(n.getObject().getOffice())) 
+					// If all fields have the same values, then the previous operation was an add of the current object to tree, so delete it
+					if(s.getName().equals(((Staff) n.getObject()).getName()) && s.getOffice().equals(((Staff) n.getObject()).getOffice())) 
 					{
 						getStaff().delete(n.getSID());
 						
@@ -124,10 +123,10 @@ public class Scheduler
 						// Set constructor of Staff to duplicate values
 						Staff toReturn = new Staff(s);
 						
-						s.setName(n.getObject().getName());
-						s.setOffice(n.getObject().getOffice());
+						s.setName( ((Staff) n.getObject()).getName());
+						s.setOffice( ((Staff) n.getObject()).getOffice());
 						
-						getRedo().push(new UndoNode(-1, toReturn.getID(), toReturn, "Edited"));
+						getRedo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
 						return toReturn;
 					}
 					
@@ -136,13 +135,13 @@ public class Scheduler
 			else
 			{
 				// If stored object is an appointment. 
-				Appointment a = s.findAppointment(n.getAID());
+				Appointment a = s.searchAppointment(n.getAID());
 				
 				// If appointment is null, it has been deleted
 				if(a == null) 
 				{
 					// Add it back
-					s.newAppointment(n.getObject());
+					s.addAppointment((Appointment) n.getObject());
 					
 					// Push newly added node to redo stack
 					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
@@ -152,14 +151,14 @@ public class Scheduler
 				{
 					// If Appointment is still in set, check if values math UndoStack object
 					
-					if(a.getStart().compareTo(n.getObject().getStart()) == 0 && a.getDuration().compareTo(n.getObject().getDuration()) 
-						&& a.getDesicription().equals(n.getObject().getDescription()) && a.getLocation().equals(n.getObject().getLocation())
-						&& a.getHidden() == n.getObject().getHidden()) 
+					if(a.getStart().compareTo(((Appointment) n.getObject()).getStart()) == 0 && a.getDuration() == ((Appointment) n.getObject()).getDuration()
+						&& a.getDescription().equals(((Appointment) n.getObject()).getDescription()) && a.getLocation().equals(((Appointment) n.getObject()).getLocation())
+						&& a.getHidden() == ((Appointment) n.getObject()).getHidden()) 
 						
 					{
-						s.deleteAppointment(a.getID());
+						s.deleteAppointment(a);
 						
-						getRedo().push( new UndoNode(a.getID(), s.getID(), a, "Deleted"));
+						getRedo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
 						
 						return a;
 					}
@@ -168,14 +167,14 @@ public class Scheduler
 					Appointment toReturn = new Appointment(a);
 					
 					// Copy values from undo stack to appointment set
-					a.setStart(n.getObject().getStart());
-					a.setDuration(n.getObject().getDuration());
-					a.setDescription(n.getObject().getDescription());
-					a.setLocation(n.getObject().getLocation());
-					a.setHidden(n.getObject().getHidden());
+					a.setStart(((Appointment) n.getObject()).getStart());
+					a.setDuration(((Appointment) n.getObject()).getDuration());
+					a.setDescription(((Appointment) n.getObject()).getDescription());
+					a.setLocation(((Appointment) n.getObject()).getLocation());
+					a.setHidden(((Appointment) n.getObject()).getHidden());
 					
 					
-					getRedo().push(new UndoNode(toReturn.getID(), s.getID(), toReturn, "Edited"));
+					getRedo().push(new UndoNode(toReturn.getID(), s.getId(), toReturn, "Edited"));
 					return toReturn;
 				}
 				
@@ -191,7 +190,7 @@ public class Scheduler
 	public Object redo() 
 	{
 		UndoNode n = getRedo().pop();
-		Staff s = getStaff().find(n.getSID());
+		Staff s = getStaff().findInTree(n.getSID());
 		
 		// If Appointment ID is negative, it doesnt exist, therefore the object is Staff
 		if(n.getAID() < 0) 
@@ -204,26 +203,20 @@ public class Scheduler
 					getUndo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
 					return s;
 					
-					break;
-					
 				case "Deleted":
-					getStaff().add(n);
+					getStaff().addTree((Staff) n.getObject());
 					
 					getUndo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
 					return n;
 					
-					break;
-					
 				case "Edited":
 					Staff toReturn = new Staff(s);
 					
-					s.setName(n.getObject().getName());
-					s.setOffice(n.getObject().getOffice());
+					s.setName(((Staff) n.getObject()).getName());
+					s.setOffice(((Staff) n.getObject()).getOffice());
 					
-					getUndo().push(new UndoNode(-1, toReturn.getID(), toReturn, "Edited"));
+					getUndo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
 					return toReturn;
-					
-					break;
 					
 				default:
 					break;
@@ -231,47 +224,46 @@ public class Scheduler
 		}
 		else 
 		{
-			Appointment a = s.findAppointment(n.getAID());
+			Appointment a = s.searchAppointment(n.getAID());
 			
 			switch(n.getAction()) 
 			{
 				case "Added":
-					s.deleteAppointment(a.getID());
+					s.deleteAppointment(a);
 					
-					getUndo().push( new UndoNode(a.getID(), s.getID(), a, "Deleted"));
+					getUndo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
 					
 					return a;					
-					break;
 					
 				case "Deleted":
 					// Add it back
-					s.newAppointment(n.getObject());
+					s.addAppointment((Appointment) n.getObject());
 					
 					// Push newly added node to redo stack
 					getUndo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
 					return n;
-					break;
 					
 				case "Edited":
 					// Make copy of Appointment stored, to add to redo stack
 					Appointment toReturn = new Appointment(a);
 					
 					// Copy values from undo stack to appointment set
-					a.setStart(n.getObject().getStart());
-					a.setDuration(n.getObject().getDuration());
-					a.setDescription(n.getObject().getDescription());
-					a.setLocation(n.getObject().getLocation());
-					a.setHidden(n.getObject().getHidden());
+					a.setStart(((Appointment) n.getObject()).getStart());
+					a.setDuration(((Appointment) n.getObject()).getDuration());
+					a.setDescription(((Appointment) n.getObject()).getDescription());
+					a.setLocation(((Appointment) n.getObject()).getLocation());
+					a.setHidden(((Appointment) n.getObject()).getHidden());
 					
 					
-					getUndo().push(new UndoNode(toReturn.getID(), s.getID(), toReturn, "Edited"));
+					getUndo().push(new UndoNode(toReturn.getID(), s.getId(), toReturn, "Edited"));
 					return toReturn;
-					break;
 					
 				default:
 					break;
 			}
 		}
+		
+		return null;
 		
 	}
 	
@@ -279,9 +271,13 @@ public class Scheduler
 	 * Will store overriden staff tree in undo stack, and load new data from file
 	 * @return    Old StaffTree
 	 */
-	public StaffTree load() 
+	public void load() 
 	{
+		getStaff().loadFromFile();
+		undo = new Undo();
+		redo = new Undo();
 		
+		System.out.println("Loaded succesfully");
 	}
 	
 	/**
@@ -289,9 +285,9 @@ public class Scheduler
 	 *     Note: Undo and Redo stacks are NOT saved
 	 * @return    true once saved succesfully
 	 */
-	public boolean save() 
+	public void save() 
 	{
-		
+		getStaff().traverseTreePreorder(getStaff().getRoot(), 0);
 	}
 	
 	/**
@@ -299,14 +295,16 @@ public class Scheduler
 	 */
 	public void displayAppointments() 
 	{
-		
+		getStaff().printAppointment(getStaff().getRoot());
 	}
 	
 	/**
 	 * Will load and display ALL appointments, for specific member of staff
 	 */
-	public void displayTasklist() 
+	public void displayTasklist(int id) 
 	{
+		Staff toPrint = getStaff().findInTree(id);
+		toPrint.printTaskList();
 		
 	}
 	
@@ -314,18 +312,23 @@ public class Scheduler
 	 * Will start by getting data from user, to find suitable timeslot, then add to appointments
 	 * @return    Appointment once booked
 	 */
-	public Appointment newAppointment() 
+	public Appointment newAppointment(int staffID, String start, int duration, String description, String location, boolean hidden) 
 	{
+		Staff toAdd = getStaff().findInTree(staffID);
+		Appointment added = toAdd.addAppointment(start, duration, description, location, hidden);
 		
+		return toAdd.searchAppointment(added.getID());
 	}
 	
 	/**
 	 * Will prompt for Staff ID, and then Appointment ID
 	 * @return    Deleted appointment to be added to Undo Stack
 	 */
-	public Appointment deleteAppointment() 
-	{
-		
+	public Appointment deleteAppointment(int staffID, int appointID) 
+	{	
+		Staff toEdit = getStaff().findInTree(staffID);
+		Appointment toDelete = toEdit.searchAppointment(appointID);
+		return toEdit.deleteAppointment(toDelete);
 	}
 	
 	/**
@@ -334,17 +337,67 @@ public class Scheduler
 	 * 
 	 * @return    Unedited appointment to be added to Undo Stack
 	 */
-	public Appointment editAppointment() 
+	public Appointment editAppointment(int staffid, int appointid, String edit, String newValue) 
 	{
+		Appointment toEdit = getStaff().findInTree(staffid).searchAppointment(appointid);
+		Appointment toReturn = new Appointment(toEdit);
 		
+		switch(edit) 
+		{
+		case "start":
+			try 
+			{
+				toEdit.setStart(toEdit.getForm().parse(newValue));
+				return toReturn;
+			}
+			catch(Exception e)
+			{
+				System.out.println("Invalid date format");
+			}
+			break;
+		case "duration":
+			try 
+			{
+				toEdit.setDuration(Integer.parseInt(newValue));
+				return toReturn;
+			}
+			catch(Exception e)
+			{
+				System.out.println("Invalid duration");
+			}
+			break;
+		case "description":
+			toEdit.setDescription(newValue);
+			return toReturn;
+		case "location":
+			toEdit.setLocation(newValue);
+			return toReturn;
+		case "hidden":
+			toEdit.setHidden(Boolean.parseBoolean(newValue));
+			return toReturn;
+		default:
+			break;
+			
+		}
+		return null;
 	}
 	
 	/**
 	 * Will create a new member of staff, and return it to undo stack
 	 * @return    Newly created member of staff
 	 */
-	public Staff newStaff() 
+	public Staff newStaff(String name, String office, int id) 
 	{
+		Staff newStaff = getStaff().addTree(new Staff(name, office, id));
+		
+		if(newStaff == null) 
+		{
+			return null;
+		}
+		else 
+		{
+			return newStaff;
+		}
 		
 	}
 	
@@ -352,8 +405,21 @@ public class Scheduler
 	 * Will prompt for Staff ID, then delete it
 	 * @return    Deleted staff member, to be added to undo stack
 	 */
-	public Staff deleteStaff() 
+	public Staff deleteStaff(int id) 
 	{
+		Staff toDelete = getStaff().findInTree(id);
+		getStaff().delete(id);
+		
+		Staff check = getStaff().findInTree(id);
+		
+		if(check == null) 
+		{
+			return toDelete;
+		}
+		else 
+		{
+			return null;
+		}
 		
 	}
 	
@@ -362,9 +428,28 @@ public class Scheduler
 	 * Verify changes are valid
 	 * @return    Unedited member of staff to be added to undo stack
 	 */
-	public Staff editStaff() 
+	public Staff editStaff(int id, String edit, String newValue) 
 	{
-		
+		Staff toEdit = getStaff().findInTree(id);
+		if(toEdit == null) 
+		{
+			System.out.println(" Staff does not exist ");
+		}
+		else 
+		{	
+			Staff toReturn = new Staff(toEdit);
+			switch(edit) {
+				case "name":
+					toEdit.setName(newValue);
+					return toReturn;
+				case "office":
+					toEdit.setOffice(newValue);
+					return toReturn;
+				default:
+					break;
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -372,9 +457,16 @@ public class Scheduler
 	 */
 	public void displayStaff() 
 	{
-		
+		getStaff().traverseTree(getStaff().getRoot(), 1);
 	}
 	
+	/**
+	 * Code implementation of testPlan
+	 */
+	public void testPlan() 
+	{
+		
+	}
 	
 	
 

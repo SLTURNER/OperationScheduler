@@ -25,6 +25,15 @@ public class StaffTree
     }
     
     /**
+     * Returns root of tree
+     * @return    Root of tree as Staff
+     */
+    public Staff getRoot() 
+    {
+    	return root;
+    }
+    
+    /**
      * @return true if the list is empty
      */
     public boolean isTreeEmpty()
@@ -93,24 +102,37 @@ public class StaffTree
     }
      
      /**
-      * Add a node to the tree
+      * Add a node to the tree if Staff is New
       * @param Id - an Staff Id to add
       */
      public void addToTree(int Id)
      {
     	 Staff newNode = new Staff();
     	 newNode.setId(Id);
+    	 addTree(newNode);
+    	 
+     }
+     
+     /**
+      * Adds Staff node to tree
+      * @param newNode
+      * @return    NewNode as Staff
+      */
+     public Staff addTree(Staff newNode) 
+     {	
+    	 int Id = newNode.getId();
     	 Staff current = new Staff();
     	 if(isTreeEmpty())
     	 {
     		 root = newNode;
+    		 return newNode;
     	 }
     	 else
     	 {
     		if(findInTree(Id) != null)
     		{
     			System.out.println("Node already in the tree");
-    			return;
+    			return null;
     		}
     		else
     		{
@@ -131,7 +153,8 @@ public class StaffTree
     					current.setRight(newNode);
     					current = current.getRight();
     				}
-    			};
+    			}
+    			return newNode;
     		}
     	 }
      }
@@ -152,6 +175,21 @@ public class StaffTree
         	 traverseTree(node.getRight(), type);
     	 }
      }
+     
+     /**
+      * Prints all appointments in tree
+      * @param node    Current node
+      */
+     public void printAppointment(Staff node) 
+     {
+    	 if(node != null)
+    	 {
+    		 printAppointment(node.getLeft());
+    		 node.printApppointments();
+    		 printAppointment(node.getRight());
+    	 }
+     }
+
      
      /**
       * process a node when traversing

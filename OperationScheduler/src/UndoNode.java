@@ -40,12 +40,12 @@ public class UndoNode
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
 	 */
-	public UndoNode(int a, int s, Object o, String a) 
+	public UndoNode(int a, int s, Object o, String action) 
 	{
 		aID = a;
 		sID = s;
 		obj = o;
-		action = a;
+		this.action = action;
 	}
 	
 	
@@ -94,15 +94,6 @@ public class UndoNode
 	public Object getObject() 
 	{
 		return obj;
-	}
-	
-	/**
-	 * Accessor, returns unchanged Objects ID
-	 * @return     ID of Object as Integer
-	 */
-	public int getObjectiD() 
-	{
-		return obj.getID();
 	}
 	
 	/**

@@ -19,13 +19,16 @@ public class Appointment {
 	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
 	private int id;
 	
+	// Used to differentiate between tasks and appointments
+	private boolean hidden;
+	
 	
 	/**
 	 * Constructor
 	 * @param date - the start date and time of appointment
 	 * @param duration - length of appointment in minutes
 	 */
-	public Appointment(String date,  int duration, String description, String location)
+	public Appointment(String date,  int duration, String description, String location, boolean hidden)
 	{
 		start = new Date();
 		end = new Date();
@@ -45,6 +48,23 @@ public class Appointment {
 		
 		this.description = description;
 		this.location = location;
+		this.hidden = hidden;
+	}
+	
+	/**
+	 * Constructor for undo method, will make deep copy
+	 * @param temp    Object to copy
+	 */
+	public Appointment(Appointment temp)
+	{
+		start = temp.getStart();
+		end = temp.getEnd();
+		
+		this.duration = temp.getDuration();
+		
+		this.description = temp.getDescription();
+		this.location = temp.getLocation();
+		this.hidden = temp.getHidden();
 	}
 	
 	
@@ -92,6 +112,24 @@ public class Appointment {
 		return description;
 	}
 	
+	/**
+	 * Gets hidden value
+	 * @return    Boolean value of isHidden
+	 */
+	public boolean getHidden() 
+	{
+		return hidden;
+	}
+	
+	/**
+	 * Changes value of hidden
+	 * @param hidden    New hidden value
+	 */
+	public void setHidden(boolean hidden) 
+	{
+		this.hidden = hidden;
+	}
+	
 	
 	/**
 	 * accessor 
@@ -112,6 +150,16 @@ public class Appointment {
 		return duration;
 	}
 	
+	/**
+	 * Updates length of appointment
+	 * @param duration    New duration
+	 */
+	public void setDuration(int duration) 
+	{
+		this.duration = duration;
+		calculateEnd(getStart());
+	}
+	
 	
 	/**
 	 * Calculates the end time of the appointment
@@ -120,7 +168,7 @@ public class Appointment {
 	private Date calculateEnd(Date start)
 	{
 		long min = start.getTime();
-		end.setTime(min + (duration * 60 * 1000));
+		end.setTime(min + (getDuration() * 60 * 1000));
 		return end;
 	}
 	
@@ -134,6 +182,16 @@ public class Appointment {
 		return start;
 	}
 	
+	/**
+	 * Updates value of start field
+	 * @param start     Time of appointment start
+	 */
+	public void setStart(Date start) 
+	{
+		this.start = start;
+		calculateEnd(getStart());
+	}
+	
 	
 	/**
 	 * accessor 
@@ -142,6 +200,15 @@ public class Appointment {
 	public Date getEnd()
 	{
 		return end;
+	}
+	
+	/**
+	 * Returns dateformat
+	 * @return    Dateformat as simmpleDateForm
+	 */
+	public SimpleDateFormat getForm() 
+	{
+		return form;
 	}
 	
 	

@@ -59,7 +59,7 @@ public class Undo
 	 */
 	public UndoNode push(Staff s, String a) 
 	{
-		UndoNode n = new UndoNode(-1, s.getID(), new Staff(s), a);
+		UndoNode n = new UndoNode(-1, s.getId(), new Staff(s), a);
 		n.setNext(getHead());
 		setHead(n);
 		return n;
