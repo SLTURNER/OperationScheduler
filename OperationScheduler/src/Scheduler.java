@@ -62,13 +62,32 @@ public class Scheduler
 		return redo;
 	}
 	
+	/**
+	 * Wrapper method for printing new line of text
+	 * @param toPrint    String to print
+	 */
+	public void print(String toPrint) 
+	{
+		System.out.println(toPrint);
+	}
 	
 	/**
 	 * Will display all menu options
 	 */
 	public void displayMenu() 
 	{
-		
+		print("A.    Display Appointments");
+		print("B.    Display Tasklist");
+		print("C.    New Appointment");
+		print("D.    Delete Appointment");
+		print("E.    Edit Appointment");
+		print("F.    Display Staff");
+		print("G.    New Staff");
+		print("H.    Delete Staff");
+		print("I.    Save State");
+		print("J.    Load from file");
+		print("K.    Undo previous action");
+		print("L.    Redo last undone action");
 	}
 	
 	/**
