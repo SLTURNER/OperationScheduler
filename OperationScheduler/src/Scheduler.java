@@ -112,22 +112,20 @@ public class Scheduler
 		while(exit == false)
 		{
 			try
-			{
-				switch(s.next())
+			{	
+				String selection = s.nextLine();
+				switch(selection.toLowerCase())
 				{
-				case "A":
 				case "a":
 					displayAppointments();
 					break;
 
-				case "B":
 				case "b":
 					displayStaff();
 					print("Please type the ID of the staff you want to see tasks for");
 					displayTasklist(s.nextInt());
 					break;
 
-				case "C":
 				case "c":
 
 					displayStaff();
@@ -139,8 +137,100 @@ public class Scheduler
 
 					print("How long will the appointment last?");
 					int duration = s.nextInt();
+					
+					print("What will be happening at the appointment?");
+					String description = s.nextLine();
+					
+					print("Where will the appointment take place?");
+					String location = s.nextLine();
+					
+					print("Is this a public appointment, or personal task? (true or false)");
+					boolean hidden = Boolean.parseBoolean(s.nextLine());
 
-					//newAppointment(int staffID, String start, int duration, String description, String location, boolean hidden)
+					Appointment toUndo = newAppointment(staffID, start, duration, description, location, hidden);
+					if(toUndo != null) 
+					{
+						getUndo().push(new UndoNode(toUndo.getID(), staffID, toUndo, "Added"));
+					}
+					else 
+					{
+						print("Adding failed");
+					}
+					break;
+				case "d":
+					displayStaff();
+					print("What is the ID of the staff, whose appointment you would like to delete?");
+					int staff1ID = s.nextInt();
+					
+					Staff toEdit = getStaff().findInTree(staff1ID);
+					toEdit.printTaskList();
+					
+					print("What is the ID of the appointment you would like to delete?");
+					int appointID = s.nextInt();
+					
+					Appointment deleted = deleteAppointment(staff1ID, appointID);
+					if(deleted != null) 
+					{
+						getUndo().push(new UndoNode(appointID, staff1ID, deleted, "Deleted"));
+					}
+					else 
+					{
+						print("Deletion failed");
+					}
+					break;
+				case "e":
+					displayStaff();
+					print("What is the ID of the staff, whose appointment you would like to edit?");
+					int staff2ID = s.nextInt();
+					
+					Staff staffA = getStaff().findInTree(staff2ID);
+					staffA.printTaskList();
+					
+					print("What is the ID of the appointment you would like to edit?");
+					int appoint1ID = s.nextInt();
+					
+					print("What would you like to edit?");
+					print("    A.    Start time");
+					print("    B.    Duration");
+					print("    C.    description");
+					print("    D.    Location");
+					print("    E.    Hidden");
+					
+					String sub = s.nextLine();
+					String edit = null;
+					
+					switch(sub.toLowerCase()) 
+					{
+					case "a":
+						edit = "start";
+						break;
+					case "b":
+						edit = "duration";
+						break;
+					case "c":
+						edit = "description";
+						break;
+					case "d":
+						edit = "location";
+						break;
+					case "e":
+						edit = "hidden";
+						break;
+					default:
+						print("Invalid selection");
+						break;
+					}
+					
+					if(!edit.isEmpty()) 
+					{
+						print("What should the new value be? If start time, format should be dd/MM/yy HH:mm");
+						String newValue = s.nextLine();
+						Appointment old = editAppointment(staff2ID, appoint1ID, edit, newValue);
+						getUndo().push(new UndoNode(appoint1ID, staff2ID, old, "Edited"));
+					}
+					
+					break;
+				case "f":
 					break;
 				}
 
