@@ -294,6 +294,7 @@ public class Scheduler
 						}
 						
 					}
+					break;
 				case "i":
 					displayStaff();
 					print("What is the ID of the member of Staff you would like to remove?");
@@ -305,6 +306,8 @@ public class Scheduler
 					{
 						getUndo().push(new UndoNode(-1, idToDel, removed, "Deleted"));
 					}
+					
+					break;
 				
 				case "j":
 					save(getStaff().getRoot());
@@ -318,13 +321,19 @@ public class Scheduler
 					redo = new Undo();
 					
 					break;
+					
 				case "l":
 					undo();
 					break;
+					
 				case "m":
 					redo();
+					break;
+					
 				case "z":
 					exit = true;
+					break;
+					
 				default:
 					print("Invalid selection");
 					break;
