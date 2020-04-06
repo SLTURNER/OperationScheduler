@@ -18,7 +18,10 @@ public class Scheduler
 
 	public static void main(String[] args)
 	{
+		
+		System.out.println("Test");
 		Scheduler s = new Scheduler();
+		s.displayMenu();
 		s.processSelection();
 
 	}
@@ -95,11 +98,12 @@ public class Scheduler
 		print("E.    Edit Appointment");
 		print("F.    Display Staff");
 		print("G.    New Staff");
-		print("H.    Delete Staff");
-		print("I.    Save State");
-		print("J.    Load from file");
-		print("K.    Undo previous action");
-		print("L.    Redo last undone action");
+		print("H.    Edit Staff");
+		print("I.    Delete Staff");
+		print("J.    Save State");
+		print("K.    Load from file");
+		print("L.    Undo previous action");
+		print("M.    Redo last undone action");
 		print("Z.    Exit");
 	}
 
@@ -113,6 +117,7 @@ public class Scheduler
 		{
 			try
 			{	
+				displayMenu();
 				String selection = s.nextLine();
 				switch(selection.toLowerCase())
 				{
@@ -123,20 +128,21 @@ public class Scheduler
 				case "b":
 					displayStaff();
 					print("Please type the ID of the staff you want to see tasks for");
-					displayTasklist(s.nextInt());
+					displayTasklist(Integer.parseInt(s.nextLine()));
+					
 					break;
 
 				case "c":
 
 					displayStaff();
-					print("What ID should the new Staff have");
-					int staffID = s.nextInt();
+					print("What is the ID of the Staff you would like to book?");
+					int staffID = Integer.parseInt(s.nextLine());;
 
 					print("When would you like to book an appointment? (Format should be: dd/MM/yy HH:mm)");
 					String start = s.nextLine();
 
 					print("How long will the appointment last?");
-					int duration = s.nextInt();
+					int duration = Integer.parseInt(s.nextLine());;
 					
 					print("What will be happening at the appointment?");
 					String description = s.nextLine();
@@ -160,13 +166,13 @@ public class Scheduler
 				case "d":
 					displayStaff();
 					print("What is the ID of the staff, whose appointment you would like to delete?");
-					int staff1ID = s.nextInt();
+					int staff1ID = Integer.parseInt(s.nextLine());;
 					
 					Staff toEdit = getStaff().findInTree(staff1ID);
 					toEdit.printTaskList();
 					
 					print("What is the ID of the appointment you would like to delete?");
-					int appointID = s.nextInt();
+					int appointID = Integer.parseInt(s.nextLine());;
 					
 					Appointment deleted = deleteAppointment(staff1ID, appointID);
 					if(deleted != null) 
@@ -181,13 +187,13 @@ public class Scheduler
 				case "e":
 					displayStaff();
 					print("What is the ID of the staff, whose appointment you would like to edit?");
-					int staff2ID = s.nextInt();
+					int staff2ID = Integer.parseInt(s.nextLine());;
 					
 					Staff staffA = getStaff().findInTree(staff2ID);
 					staffA.printTaskList();
 					
 					print("What is the ID of the appointment you would like to edit?");
-					int appoint1ID = s.nextInt();
+					int appoint1ID = Integer.parseInt(s.nextLine());;
 					
 					print("What would you like to edit?");
 					print("    A.    Start time");
@@ -231,7 +237,99 @@ public class Scheduler
 					
 					break;
 				case "f":
+					displayStaff();
 					break;
+				case "g":
+					print("What is the name of the new Employee?");
+					String name = s.nextLine();
+					
+					print("Where is their office located?");
+					String office = s.nextLine();
+							
+					print("What is their staff ID?");
+					int id = Integer.parseInt(s.nextLine());;
+							
+					Staff newStaff = newStaff(name, office, id);
+					
+					if(newStaff != null) 
+					{
+						getUndo().push(new UndoNode(-1, id, newStaff, "Added"));
+					}
+					
+					break;
+				case "h":
+					displayStaff();
+					
+					print("What is the ID of the member of staff you would like to update?");
+					int sID = Integer.parseInt(s.nextLine());;
+					
+					print("What would you like to update?");
+					print("    A.    Name");
+					print("    B.    Office");
+					String selection2 = s.nextLine();
+					String edit2 = null;
+					
+					switch(selection2.toLowerCase()) 
+					{
+					case "a":
+						edit2 = "name";
+						break;
+					case "b":
+						edit2 = "office";
+						break;
+					default:
+						break;
+					}
+					
+					if(!edit2.isEmpty()) 
+					{
+						print("What is the new value?");
+						String newValue2 = s.nextLine();
+						
+						Staff old = editStaff(sID, edit2, newValue2);
+						
+						if(old != null) 
+						{
+							getUndo().push(new UndoNode(-1, sID, old, "Edited"));
+						}
+						
+					}
+				case "i":
+					displayStaff();
+					print("What is the ID of the member of Staff you would like to remove?");
+					int idToDel = Integer.parseInt(s.nextLine());;
+					
+					Staff removed = deleteStaff(idToDel);
+					
+					if(removed != null) 
+					{
+						getUndo().push(new UndoNode(-1, idToDel, removed, "Deleted"));
+					}
+				
+				case "j":
+					save(getStaff().getRoot());
+					undo = new Undo();
+					redo = new Undo();
+					
+					break;
+				case "k":
+					load();
+					undo = new Undo();
+					redo = new Undo();
+					
+					break;
+				case "l":
+					undo();
+					break;
+				case "m":
+					redo();
+				case "z":
+					exit = true;
+				default:
+					print("Invalid selection");
+					break;
+				
+					
 				}
 
 

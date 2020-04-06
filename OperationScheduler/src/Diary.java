@@ -182,7 +182,7 @@ public class Diary {
 				for (int i = 0;i<appointment.size();i++)
 				{	
 					Appointment current = appointment.get(i);
-					System.out.println("ID:" + current.getID() + " Start: " + current.getStart() + " for " +  current.getDuration() + " minutes /n At " + current.getLocation());
+					System.out.println("ID:" + current.getID() + " Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
 					System.out.println("________________________________________________________________________________");
 				}
 		}
