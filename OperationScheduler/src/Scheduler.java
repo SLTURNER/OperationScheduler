@@ -1,11 +1,15 @@
 import java.io.FileOutputStream;
+
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Scheduler
 {
@@ -135,8 +139,14 @@ public class Scheduler
 				case "c":
 
 					displayStaff();
-					print("What is the ID of the Staff you would like to book?");
-					int staffID = Integer.parseInt(s.nextLine());;
+					print("What is the ID of the Staff you would like to book? (Seperated by comma)");
+					String input = s.nextLine();
+					String[] splitInput = input.split(",");
+					Set<Integer> staffSet = new HashSet<>();
+					for(String s: splitInput) 
+					{
+						staffSet.add(Integer.parseInt(s));
+					}
 
 					print("When would you like to book an appointment? (Format should be: dd/MM/yy HH:mm)");
 					String start = s.nextLine();
@@ -152,11 +162,18 @@ public class Scheduler
 					
 					print("Is this a public appointment, or personal task? (true or false)");
 					boolean hidden = Boolean.parseBoolean(s.nextLine());
+					Appointment toUndo = null;
+					int lastID = -1;
 
-					Appointment toUndo = newAppointment(staffID, start, duration, description, location, hidden);
+					for(int a: staffSet) 
+					{
+						toUndo = newAppointment(a, start, duration, description, location, hidden, staffSet);
+						lastID = a;
+					}
+					
 					if(toUndo != null) 
 					{
-						getUndo().push(new UndoNode(toUndo.getID(), staffID, toUndo, "Added"));
+						getUndo().push(new UndoNode(toUndo.getID(), lastID, toUndo, "Added"));
 					}
 					else 
 					{
@@ -192,8 +209,8 @@ public class Scheduler
 					Staff staffA = getStaff().findInTree(staff2ID);
 					staffA.printTaskList();
 					
-					print("What is the ID of the appointment you would like to edit?");
-					int appoint1ID = Integer.parseInt(s.nextLine());;
+					print("What is the start time of the appointment to Edit? (Format should be dd/MM/yy HH:mm)");
+					String appoint1ID = s.nextLine();
 					
 					print("What would you like to edit?");
 					print("    A.    Start time");
@@ -232,7 +249,7 @@ public class Scheduler
 						print("What should the new value be? If start time, format should be dd/MM/yy HH:mm");
 						String newValue = s.nextLine();
 						Appointment old = editAppointment(staff2ID, appoint1ID, edit, newValue);
-						getUndo().push(new UndoNode(appoint1ID, staff2ID, old, "Edited"));
+						getUndo().push(new UndoNode(old.getID(), staff2ID, old, "Edited"));
 					}
 					
 					break;
@@ -396,20 +413,38 @@ public class Scheduler
 
 			switch(n.getAction())
 			{
-				case "Added":
-					s.deleteAppointment(a);
+			case "Added":
+				Set<Integer> allApp = a.getSet();
+				Appointment deleted = null;
+				int lastID = -1;
+				
+				for(int toDel: allApp) 
+				{
+					Staff current = getStaff().findInTree(toDel);
+					deleted = current.deleteAppointment(a.getStart());
+					lastID = current.getId();
+				}
 
-					getRedo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
+				getRedo().push( new UndoNode(a.getID(), lastID, deleted, "Deleted"));
 
-					return a;
+				return a;
 
-				case "Deleted":
-					// Add it back
-					s.addAppointment((Appointment) n.getObject());
+			case "Deleted":
+				Set<Integer> allApp2 = a.getSet();
+				
+				Appointment added = null;
+				int lastSID = -1;
+				
+				for(int toDel: allApp2) 
+				{
+					Staff current = getStaff().findInTree(toDel);
+					added = current.addAppointment(a);
+					lastSID = current.getId();
+				}
 
-					// Push newly added node to redo stack
-					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
-					return n;
+				getRedo().push( new UndoNode(a.getID(), lastSID, added, "Added"));
+				
+				return n;
 
 				case "Edited":
 					// Make copy of Appointment stored, to add to redo stack
@@ -476,23 +511,41 @@ public class Scheduler
 		}
 		else
 		{
-			Appointment a = s.searchAppointment(n.getAID());
+			Appointment a = s.searchAppointment(((Appointment) n.getObject()).getStart());
 
 			switch(n.getAction())
 			{
 				case "Added":
-					s.deleteAppointment(a);
+					Set<Integer> allApp = a.getSet();
+					Appointment deleted = null;
+					int lastID = -1;
+					
+					for(int toDel: allApp) 
+					{
+						Staff current = getStaff().findInTree(toDel);
+						deleted = current.deleteAppointment(a.getStart());
+						lastID = current.getId();
+					}
 
-					getUndo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
+					getUndo().push( new UndoNode(a.getID(), lastID, deleted, "Deleted"));
 
 					return a;
 
 				case "Deleted":
-					// Add it back
-					s.addAppointment((Appointment) n.getObject());
+					Set<Integer> allApp2 = a.getSet();
+					
+					Appointment added = null;
+					int lastSID = -1;
+					
+					for(int toDel: allApp2) 
+					{
+						Staff current = getStaff().findInTree(toDel);
+						added = current.addAppointment(a);
+						lastSID = current.getId();
+					}
 
-					// Push newly added node to redo stack
-					getUndo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
+					getUndo().push( new UndoNode(a.getID(), lastSID, added, "Added"));
+					
 					return n;
 
 				case "Edited":
@@ -563,7 +616,7 @@ public class Scheduler
 	             boolean hidden = Boolean.parseBoolean(appointmentFields[4]);
 	
 	             //Create an appointment with the appointment fields
-	             Appointment newAppointment = new Appointment(date, duration, description, location, hidden);
+	             Appointment newAppointment = new Appointment(date, duration, description, location, hidden, new HashSet<>());
 	
 	             //Add the appointment to the staff member's diary
 	             newStaff.addAppointment(newAppointment);
@@ -677,10 +730,16 @@ public class Scheduler
 	 * Will start by getting data from user, to find suitable timeslot, then add to appointments
 	 * @return    Appointment once booked
 	 */
-	public Appointment newAppointment(int staffID, String start, int duration, String description, String location, boolean hidden)
+	public Appointment newAppointment(int staffID, String start, int duration, String description, String location, boolean hidden, Set<Integer> staff)
 	{
-		Staff toAdd = getStaff().findInTree(staffID);
-		Appointment added = toAdd.addAppointment(start, duration, description, location, hidden);
+		Appointment added = null;
+		Staff toAdd = null;
+		
+		for(int staffTo: staff) 
+		{
+			toAdd = getStaff().findInTree(staffTo);
+			added = toAdd.addAppointment(start, duration, description, location, hidden, staff);
+		}
 
 		return toAdd.searchAppointment(added.getID());
 	}
@@ -691,9 +750,18 @@ public class Scheduler
 	 */
 	public Appointment deleteAppointment(int staffID, int appointID)
 	{
-		Staff toEdit = getStaff().findInTree(staffID);
-		Appointment toDelete = toEdit.searchAppointment(appointID);
-		return toEdit.deleteAppointment(toDelete);
+		Staff toEdit = null;
+		Appointment toDelete = null;
+		Appointment check = getStaff().findInTree(staffID).searchAppointment(appointID);
+		
+		for(int current: check.getSet()) 
+		{
+			toEdit = getStaff().findInTree(current);
+			toDelete = toEdit.deleteAppointment(check.getStart());
+		}
+		
+		
+		return toDelete;
 	}
 
 	/**
@@ -702,17 +770,23 @@ public class Scheduler
 	 *
 	 * @return    Unedited appointment to be added to Undo Stack
 	 */
-	public Appointment editAppointment(int staffid, int appointid, String edit, String newValue)
-	{
-		Appointment toEdit = getStaff().findInTree(staffid).searchAppointment(appointid);
+	public Appointment editAppointment(int staffid, String appointid, String edit, String newValue) throws Exception
+	{	
+		SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
+		Appointment toEdit = getStaff().findInTree(staffid).searchAppointment(form.parse(appointid));
 		Appointment toReturn = new Appointment(toEdit);
+		Set<Integer> allStaff = toEdit.getSet();
+		print(allStaff.toString());
 
 		switch(edit)
 		{
 		case "start":
 			try
 			{
-				toEdit.setStart(toEdit.getForm().parse(newValue));
+				for(int staff: allStaff) 
+				{
+					getStaff().findInTree(staff).searchAppointment(toReturn.getStart()).setStart(toEdit.getForm().parse(newValue));
+				}
 				return toReturn;
 			}
 			catch(Exception e)
@@ -722,23 +796,36 @@ public class Scheduler
 			break;
 		case "duration":
 			try
-			{
-				toEdit.setDuration(Integer.parseInt(newValue));
+			{	
+				for(int staff: allStaff) 
+				{
+					getStaff().findInTree(staff).searchAppointment(toReturn.getStart()).setDuration(Integer.parseInt(newValue));
+				}
 				return toReturn;
 			}
 			catch(Exception e)
-			{
+			{	
+				print(e.getMessage());
 				System.out.println("Invalid duration");
 			}
 			break;
 		case "description":
-			toEdit.setDescription(newValue);
+			for(int staff: allStaff) 
+			{
+				getStaff().findInTree(staff).searchAppointment(toReturn.getStart()).setDescription(newValue);
+			}
 			return toReturn;
 		case "location":
-			toEdit.setLocation(newValue);
+			for(int staff: allStaff) 
+			{
+				getStaff().findInTree(staff).searchAppointment(toReturn.getStart()).setLocation(newValue);
+			}
 			return toReturn;
 		case "hidden":
-			toEdit.setHidden(Boolean.parseBoolean(newValue));
+			for(int staff: allStaff) 
+			{
+				getStaff().findInTree(staff).searchAppointment(toReturn.getStart()).setHidden(Boolean.parseBoolean(newValue));
+			}
 			return toReturn;
 		default:
 			break;
@@ -832,11 +919,11 @@ public class Scheduler
 	{
 		
 		print("Test 1. Create new appointment when no Staff exists");
-		newAppointment(5, "30/07/21 12:30", 30, "Test 1", "QMB", false);
+		newAppointment(5, "30/07/21 12:30", 30, "Test 1", "QMB", false, new HashSet<>());
 		
 		print("Test 2. Add staff, then appointment");
 		newStaff("Iain Martin", "QMB", 133);
-		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false, new HashSet<>());
 		
 		print("Test 3. Add a further 3 members of staff");
 		newStaff("Craig Ramsay", "QMB", 134);
@@ -856,13 +943,40 @@ public class Scheduler
 		
 		print("Test 6. Add appointment to staff with no appointments");
 		newStaff("Iain Martin", "QMB", 133);
-		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false, new HashSet<>());
 		displayAppointments();
 		
 		print("Test 7. Invalid start date");
-		newAppointment(133, "24/12/1943", 120, "Lecture for AC12001", "QMB", false);
+		newAppointment(133, "24/12/1943", 120, "Lecture for AC12001", "QMB", false, new HashSet<>());
 		
 		print("Test 8. Appointment for multiple Staff");
+		
+		print("Test 9. Remove appointment with multiple staff attached");
+		
+		print("Test 10. Display Tasklist for a member of staff");
+		displayTasklist(133);
+		
+		print("Test 11. Add staff, then undo addition");
+		newStaff("Craig Ramsay", "QMB", 134);
+		displayStaff();
+		undo();
+		displayStaff();
+		
+		print("Test 12. Redo undone action (Add back Craig)");
+		redo();
+		displayStaff();
+		
+		print("Test 13. Add appointment, undo addition");
+		newAppointment(134, "24/12/2020", 120, "Lecture for AC22001", "QMB", false, new HashSet<>());
+		displayAppointments();
+		undo();
+		displayAppointments();
+		
+		print("Test 14. Redo undone action (Add back removed appointment)");
+		redo();
+		displayAppointments();
+		
+		print("Test 15. ");
 		
 		
 		

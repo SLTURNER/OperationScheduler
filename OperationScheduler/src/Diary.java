@@ -1,9 +1,11 @@
 import java.text.ParseException;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
 
 /**
  *@author Mohsin Raza 
@@ -39,14 +41,14 @@ public class Diary {
 	 * @param location - of appointment
 	 * @return true if added, false otherwise
 	 */
-	public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden)
+	public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden, Set<Integer> staff)
 	{
 		//initialise start date and current date
 		Date startDate = new Date();
 		Date current = new Date();
 		
 		//construct new appointment
-		Appointment holder = new Appointment(date, duration, description, location, hidden);
+		Appointment holder = new Appointment(date, duration, description, location, hidden, staff);
 		
 		//parse string into Date data type
 		startDate = dateParser(date);
@@ -182,7 +184,7 @@ public class Diary {
 				for (int i = 0;i<appointment.size();i++)
 				{	
 					Appointment current = appointment.get(i);
-					System.out.println("ID:" + current.getID() + " Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
+					System.out.println(" Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
 					System.out.println("________________________________________________________________________________");
 				}
 		}
@@ -212,7 +214,7 @@ public class Diary {
 					Appointment current = appointment.get(i);
 					if(current.getHidden() == false) 
 					{
-						System.out.println("Start: " + current.getStart() + " for " +  current.getDuration() + " minutes /n At " + current.getLocation());
+						System.out.println("Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
 						System.out.println("________________________________________________________________________________");
 					}
 				}
@@ -422,6 +424,36 @@ public class Diary {
 			System.out.println("No appointment has been booked at that date and time");
 			return false;
 		}
+	}
+	
+	/**
+	 * Searches by date
+	 * @param date - start date of appointment to be searched
+	 * @return    found appointment
+	 */
+	public Appointment searchAppointmentByString(String date)
+	{
+		Date date01 = new Date();
+	    date01 = dateParser(date);
+	    
+	    //preventing null pointer exception
+	    if(appointment != null)
+	    {
+	    	//going through all existing appointments
+			for (int i = 0;i<appointment.size();i++)
+			{
+				/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
+				if(appointment.get(i).getStart().equals(date01))
+				{
+				
+					//counter increases if appointment is found
+					return appointment.get(i);
+				}
+			}
+	    }
+	    return null;
+		
 	}
 	
 	/**
