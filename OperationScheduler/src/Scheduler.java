@@ -358,83 +358,60 @@ public class Scheduler
 	public Object undo()
 	{
 		UndoNode n = getUndo().pop();
+		Staff s = getStaff().findInTree(n.getSID());
 
-		// If n is null, no item in UndoStack
-		if(n == null)
+		// If Appointment ID is negative, it doesnt exist, therefore the object is Staff
+		if(n.getAID() < 0)
 		{
-			return null;
-		}
-		else
-		{
-			Staff s = getStaff().findInTree(n.getSID());
-
-			// If AID is -1, then the stored Object is the StaffTree, as that means there is no appointment
-			if(n.getAID() == -1)
+			switch(n.getAction())
 			{
+				case "Added":
+					getStaff().delete(n.getSID());
 
-				// If staff is not in StaffTree, then it must have been deleted, so add it back
-				if(s == null) {
-					getStaff().addTree((Staff)n.getObject());
+					getRedo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
+					return s;
+
+				case "Deleted":
+					getStaff().addTree((Staff) n.getObject());
 
 					getRedo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
 					return n;
-				}
-				// Values of Staff must have been changed, so change them back.
-				else
-				{
-					// If all fields have the same values, then the previous operation was an add of the current object to tree, so delete it
-					if(s.getName().equals(((Staff) n.getObject()).getName()) && s.getOffice().equals(((Staff) n.getObject()).getOffice()))
-					{
-						getStaff().delete(n.getSID());
 
-						getRedo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
-						return s;
-					}
-					else
-					{
-						// Set constructor of Staff to duplicate values
-						Staff toReturn = new Staff(s);
+				case "Edited":
+					Staff toReturn = new Staff(s);
 
-						s.setName( ((Staff) n.getObject()).getName());
-						s.setOffice( ((Staff) n.getObject()).getOffice());
+					s.setName(((Staff) n.getObject()).getName());
+					s.setOffice(((Staff) n.getObject()).getOffice());
 
-						getRedo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
-						return toReturn;
-					}
+					getRedo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
+					return toReturn;
 
-				}
+				default:
+					break;
 			}
-			else
-			{
-				// If stored object is an appointment.
-				Appointment a = s.searchAppointment(n.getAID());
+		}
+		else
+		{
+			Appointment a = s.searchAppointment(n.getAID());
 
-				// If appointment is null, it has been deleted
-				if(a == null)
-				{
+			switch(n.getAction())
+			{
+				case "Added":
+					s.deleteAppointment(a);
+
+					getRedo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
+
+					return a;
+
+				case "Deleted":
 					// Add it back
 					s.addAppointment((Appointment) n.getObject());
 
 					// Push newly added node to redo stack
 					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
 					return n;
-				}
-				else
-				{
-					// If Appointment is still in set, check if values math UndoStack object
 
-					if(a.getStart().compareTo(((Appointment) n.getObject()).getStart()) == 0 && a.getDuration() == ((Appointment) n.getObject()).getDuration()
-						&& a.getDescription().equals(((Appointment) n.getObject()).getDescription()) && a.getLocation().equals(((Appointment) n.getObject()).getLocation())
-						&& a.getHidden() == ((Appointment) n.getObject()).getHidden())
-
-					{
-						s.deleteAppointment(a);
-
-						getRedo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
-
-						return a;
-					}
-
+				case "Edited":
 					// Make copy of Appointment stored, to add to redo stack
 					Appointment toReturn = new Appointment(a);
 
@@ -448,10 +425,13 @@ public class Scheduler
 
 					getRedo().push(new UndoNode(toReturn.getID(), s.getId(), toReturn, "Edited"));
 					return toReturn;
-				}
 
+				default:
+					break;
 			}
 		}
+
+		return null;
 
 	}
 
