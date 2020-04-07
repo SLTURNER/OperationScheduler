@@ -830,6 +830,42 @@ public class Scheduler
 	 */
 	public void testPlan()
 	{
+		
+		print("Test 1. Create new appointment when no Staff exists");
+		newAppointment(5, "30/07/21 12:30", 30, "Test 1", "QMB", false);
+		
+		print("Test 2. Add staff, then appointment");
+		newStaff("Iain Martin", "QMB", 133);
+		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		
+		print("Test 3. Add a further 3 members of staff");
+		newStaff("Craig Ramsay", "QMB", 134);
+		newStaff("Michael Crabb", "QMB", 12);
+		newStaff("Jacky Visser", "QMB", 13);
+		displayStaff();
+		
+		print("Test 4. Delete a member of staff");
+		deleteStaff(13);
+		displayStaff();
+		
+		print("Test 5. Delete a further 3 members of staff");
+		deleteStaff(12);
+		deleteStaff(134);
+		deleteStaff(133);
+		displayStaff();
+		
+		print("Test 6. Add appointment to staff with no appointments");
+		newStaff("Iain Martin", "QMB", 133);
+		newAppointment(133, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		displayAppointments();
+		
+		print("Test 7. Invalid start date");
+		newAppointment(133, "24/12/1943", 120, "Lecture for AC12001", "QMB", false);
+		
+		print("Test 8. Appointment for multiple Staff");
+		
+		
+		
 
 	}
 
