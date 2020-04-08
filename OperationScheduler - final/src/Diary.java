@@ -14,6 +14,7 @@ public class Diary {
 	
 	private String staffName;
 	ArrayList<Appointment> appointment;
+	int aCount = 1;
 	
 	/**
 	 * Constructor
@@ -24,23 +25,28 @@ public class Diary {
 		this.staffName = name;
 	}
 	
+	public ArrayList<Appointment> getAppointment()
+	{
+		return appointment;
+	}
+	
 	
 	/**
-	 * 
+	 *  Will, given the time and duration, check if the slot is taken, if not, will add Appointment to ArrayList
 	 * @param date - start date of appointment
 	 * @param duration - duration of appointment in minutes
 	 * @param description - of appointment
 	 * @param location - of appointment
 	 * @return true if added, false otherwise
 	 */
-	public boolean addAppointment(String date, int duration, String description, String location)
+	public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden)
 	{
 		//initialise start date and current date
 		Date startDate = new Date();
 		Date current = new Date();
 		
 		//construct new appointment
-		Appointment holder = new Appointment(date, duration, description, location);
+		Appointment holder = new Appointment(date, duration, description, location, hidden);
 		
 		//parse string into Date data type
 		startDate = dateParser(date);
@@ -62,29 +68,55 @@ public class Diary {
 			
 			//Creates a new appointment arraylist if none have already been booked provided that the first two if statements are false
 			if(appointment == null && duration >=5 && startDate.after(current))
-			{
+			{	
+				holder.setID(incrementCount());
 				appointment = new ArrayList<Appointment>();
 				appointment.add(holder);
 				
-				return true;
+				return holder;
 			}
 			//adds appointment to existing arraylist provided that there are no overlaps with existing appointments and the first two if statements are false
 			else if(appointment != null && overlapCheck(date,duration) == false && duration >=5 && startDate.after(current))
-			{
+			{	
+				holder.setID(incrementCount());
 				appointment.add(holder);
-				return true;
+				return holder;
 			}
 			else
 			{
-				return false;
+				return null;
 			}
 		}
 		//returns false if the appointment cannot be booked due to invalid input
 		else
 		{
 			System.out.println("Date input invalid");
-			return false;
+			return null;
 		}
+	}
+	
+	/**
+	 * Will add Appointment node to Diary, and check if added successfully
+	 * @param temp    New node
+	 * @return    New node
+	 */
+	public Appointment addAppointment(Appointment temp) 
+	{
+		appointment.add(temp);
+		
+		int id = temp.getID();
+		return searchAppointment(id);
+
+	}
+	
+	/**
+	 * Returns current value and increments count by 1
+	 * @return    Current count value
+	 */
+	public int incrementCount() {
+		int count = aCount;
+		aCount = count +1;
+		return count;
 	}
 	
 	
@@ -134,7 +166,35 @@ public class Diary {
 	
 	
 	/**
-	 * Prints the booked appointments
+	 * Prints the booked tasks
+	 */
+	public void printTaskList()
+	{
+		//check to see if there are appointments to be printed
+		if(appointment !=null)
+		{
+			//sorting appointments by date
+			sortAppointments();
+			
+			System.out.println("\tThe following tasks have been recorded for " + staffName );
+				
+				//looping over all existing appointments
+				for (int i = 0;i<appointment.size();i++)
+				{	
+					Appointment current = appointment.get(i);
+					System.out.println("ID:" + current.getID() + " Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
+					System.out.println("________________________________________________________________________________");
+				}
+		}
+		//if no appointments have been booked
+		else
+		{
+			System.out.println("No Appointments have been booked for " + staffName);
+		}
+	}
+	
+	/**
+	 * Prints booked appointments
 	 */
 	public void printApp()
 	{
@@ -144,12 +204,17 @@ public class Diary {
 			//sorting appointments by date
 			sortAppointments();
 			
-			System.out.println("\tThe following appointments have been booked for " + staffName );
+			System.out.println("\tThe following tasks have been recorded for " + staffName );
 				
 				//looping over all existing appointments
 				for (int i = 0;i<appointment.size();i++)
-				{
-						System.out.println("--" + appointment.get(i).getStart() + " for " +  appointment.get(i).getDuration() + " minutes at " + appointment.get(i).getLocation() + "--");
+				{	
+					Appointment current = appointment.get(i);
+					if(current.getHidden() == false) 
+					{
+						System.out.println("Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
+						System.out.println("________________________________________________________________________________");
+					}
 				}
 		}
 		//if no appointments have been booked
@@ -218,12 +283,24 @@ public class Diary {
 	 * @param start date of appointment
 	 * @return true if the appointment has been deleted, false otherwise
 	 */
-	public boolean deleteAppointment(String date) 
+	public Appointment deleteAppointment(String date) 
 	{
 	    Date date01 = new Date();
 	    date01= dateParser(date);
 	    
-	    //preventing null pointer exceptions
+	    return deleteAppointment(date01);
+	    
+	   
+	}
+	
+	/**
+	 * Deletes appointment from date start
+	 * @param date01    Start of appointment
+	 * @return    Deleted appointment
+	 */
+	public Appointment deleteAppointment(Date date01) 
+	{
+		 //preventing null pointer exceptions
 	    if(appointment !=null)
 	    {
 		    for (int i = 0; i < appointment.size(); i++) 
@@ -233,16 +310,16 @@ public class Diary {
 		    	if (date01.equals(appointment.get(i).getStart())) 
 		    	{
 		    		//removal of the appointment found
-		    		appointment.remove(i);
-		    		return true;
+		    		Appointment removed = appointment.remove(i);
+		    		return removed;
 		    	}
 		    }
 	    }
 	    else
 	    {
-	    	return false;
+	    	return null;
 	    }
-		return false;
+		return null;
 	}
 	
 	
@@ -252,7 +329,7 @@ public class Diary {
 	 * @param newDescription - description to replace of old one
 	 * @return true if description has been edited successfully
 	 */
-	public boolean editDescription(String date, String newDescription) 
+	public Appointment editDescription(String date, String newDescription) 
 	{
 	    Date date01 = new Date();
 	    date01= dateParser(date);
@@ -264,17 +341,19 @@ public class Diary {
 		    	/*if the start date searched matches one in the arraylist we can assume its the appointment
 		    	the user wants as only one appointment can start at any given time*/
 		    	if (date01.equals(appointment.get(i).getStart())) 
-		    	{
-		    		appointment.get(i).setDescription(newDescription);;
-		    		return true;
+		    	{	
+		    		Appointment toEdit = appointment.get(i);
+		    		Appointment toReturn = new Appointment(toEdit);
+		    		toEdit.setDescription(newDescription);;
+		    		return toReturn;
 		    	}
 		    }
 	    }
 	    else
 	    {
-	    	return false;
+	    	return null;
 	    }
-		return false;
+		return null;
     }
 	
 	
@@ -284,7 +363,7 @@ public class Diary {
 	 * @param newLocation - new location to be input
 	 * @return true if edit is successful, false otherwise
 	 */
-	public boolean editLocation(String date, String newLocation) 
+	public Appointment editLocation(String date, String newLocation) 
 	{
 	    Date date01 = new Date();
 	    date01= dateParser(date);
@@ -293,12 +372,14 @@ public class Diary {
 	    {
 	     
 	    	if (date01.equals(appointment.get(i).getStart())) 
-	    	{
-	    		appointment.get(i).setLocation(newLocation);
-	    		return true;
+	    	{	
+	    		Appointment toEdit = appointment.get(i);
+	    		Appointment toReturn = new Appointment(toEdit);
+	    		toEdit.setLocation(newLocation);
+	    		return toReturn;
 	    	}
 	    }
-	    	return false;
+	    	return null;
 	}
 	
 	
@@ -341,6 +422,56 @@ public class Diary {
 			System.out.println("No appointment has been booked at that date and time");
 			return false;
 		}
+	}
+	
+	/**
+	 * Search appointments by date
+	 * @param date    Search parameter
+	 * @return    Found appointment
+	 */
+	public Appointment searchAppointment(Date date)
+	{	    
+	    //preventing null pointer exception
+	    if(appointment != null)
+	    {
+	    	//going through all existing appointments
+			for (int i = 0;i<appointment.size();i++)
+			{
+				/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
+				if(appointment.get(i).getStart().equals(date))
+				{
+					return appointment.get(i);
+				}
+			}
+	    }
+		
+		return null;
+	}
+	
+	/**
+	 * Searches through appoointments by ID
+	 * @param id    Search parameter
+	 * @return    Found Appointment
+	 */
+	public Appointment searchAppointment(int id) 
+	{
+		//preventing null pointer exception
+	    if(appointment != null)
+	    {
+	    	//going through all existing appointments
+			for (int i = 0;i<appointment.size();i++)
+			{
+				/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
+				if(appointment.get(i).getID() == id)
+				{
+					return appointment.get(i);
+				}
+			}
+	    }
+		
+		return null;
 	}
 	
 	
