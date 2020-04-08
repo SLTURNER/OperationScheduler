@@ -14,7 +14,7 @@ public class Diary {
 	
 	private String staffName;
 	ArrayList<Appointment> appointment;
-	int aCount = 0;
+	int aCount = 1;
 	
 	/**
 	 * Constructor
@@ -212,7 +212,7 @@ public class Diary {
 					Appointment current = appointment.get(i);
 					if(current.getHidden() == false) 
 					{
-						System.out.println("Start: " + current.getStart() + " for " +  current.getDuration() + " minutes /n At " + current.getLocation());
+						System.out.println("Start: " + current.getStart() + " for " +  current.getDuration() + " minutes \n At " + current.getLocation());
 						System.out.println("________________________________________________________________________________");
 					}
 				}
@@ -422,6 +422,31 @@ public class Diary {
 			System.out.println("No appointment has been booked at that date and time");
 			return false;
 		}
+	}
+	
+	/**
+	 * Search appointments by date
+	 * @param date    Search parameter
+	 * @return    Found appointment
+	 */
+	public Appointment searchAppointment(Date date)
+	{	    
+	    //preventing null pointer exception
+	    if(appointment != null)
+	    {
+	    	//going through all existing appointments
+			for (int i = 0;i<appointment.size();i++)
+			{
+				/*if the start date searched matches one in the arraylist we can assume its the appointment
+		    	the user wants as only one appointment can start at any given time*/
+				if(appointment.get(i).getStart().equals(date))
+				{
+					return appointment.get(i);
+				}
+			}
+	    }
+		
+		return null;
 	}
 	
 	/**

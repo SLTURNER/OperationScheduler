@@ -1,3 +1,5 @@
+import java.util.Date;
+
 /**
  * Class for Staff
  * @author Lubo Tsenkov
@@ -191,6 +193,16 @@ public class Staff {
     }
     
     /**
+     * Wrapper method, to serach for appointment by Date
+     * @param date    Search parameter
+     * @return     Found Appointment
+     */
+    public Appointment searchAppointment(Date date) 
+    {
+    	return getDiary().searchAppointment(date);
+    }
+    
+    /**
      *  Adds appointment by node to Diary
      * @param toAdd    New node
      * @return    New node
@@ -200,6 +212,11 @@ public class Staff {
     	return getDiary().addAppointment(toAdd);
     }
     
+    /**
+     * Finds appointment to delete based on start time
+     * @param toDelete    Serach parameter
+     * @return    Deleted appointment
+     */
     public Appointment deleteAppointment(Appointment toDelete) 
     {
     	return getDiary().deleteAppointment(toDelete.getStart());

@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -136,13 +137,14 @@ public class Scheduler
 				case "c":
 
 					displayStaff();
-					LinkedList<Integer> staffIDs;
+					LinkedList<Integer> staffIDs = new LinkedList<>();
 					
-					print("What is the ID of the Staff you would like to book?");
-					while (s.nextLine() != "-1")
+					print("What is the ID of the Staff you would like to book? (Listed and seperated by comma)");
+					String input = s.nextLine();
+					String[] splitInput = input.split(",");
+					for(String s: splitInput) 
 					{
-						print("Enter the ID of another Staff you would like to book, or enter -1 to continue");
-						staffIDs.add(Integer.parseInt(s.nextLine()));
+						staffIDs.add(Integer.parseInt(s));
 					}
 					
 
@@ -158,7 +160,7 @@ public class Scheduler
 					print("Where will the appointment take place?");
 					String location = s.nextLine();
 					
-					print("Is this a public appointment, or personal task? (true or false)");
+					print("Is this a personal task? (true or false)");
 					boolean hidden = Boolean.parseBoolean(s.nextLine());
 
 					Appointment toUndo = newAppointment(staffIDs, start, duration, description, location, hidden);
@@ -180,12 +182,15 @@ public class Scheduler
 					toEdit.printTaskList();
 					
 					print("What is the ID of the appointment you would like to delete?");
-					int appointID = Integer.parseInt(s.nextLine());;
+					int appointID = Integer.parseInt(s.nextLine());
 					
-					Appointment deleted = deleteAppointment(staff1ID, appointID);
+					UndoNode deleted = deleteAppointment(staff1ID, appointID);
+					print("It gets to here?");
+					
 					if(deleted != null) 
 					{
-						getUndo().push(new UndoNode(appointID, staff1ID, deleted, "Deleted"));
+						getUndo().push(deleted);
+						print("But not here?");
 					}
 					else 
 					{
@@ -240,7 +245,11 @@ public class Scheduler
 						print("What should the new value be? If start time, format should be dd/MM/yy HH:mm");
 						String newValue = s.nextLine();
 						Appointment old = editAppointment(staff2ID, appoint1ID, edit, newValue);
-						getUndo().push(new UndoNode(appoint1ID, staff2ID, old, "Edited"));
+						
+						LinkedList<Integer> staffIDList2 = new LinkedList<Integer>();
+						staffIDList2.add(staff2ID);
+						
+						getUndo().push(new UndoNode(appoint1ID, staffIDList2, old, "Edited"));
 					}
 					
 					break;
@@ -259,9 +268,12 @@ public class Scheduler
 							
 					Staff newStaff = newStaff(name, office, id);
 					
+					LinkedList<Integer> staffIDList3 = new LinkedList<Integer>();
+					staffIDList3.add(id);
+					
 					if(newStaff != null) 
 					{
-						getUndo().push(new UndoNode(-1, id, newStaff, "Added"));
+						getUndo().push(new UndoNode(-1, staffIDList3, newStaff, "Added"));
 					}
 					
 					break;
@@ -296,9 +308,12 @@ public class Scheduler
 						
 						Staff old = editStaff(sID, edit2, newValue2);
 						
+						LinkedList<Integer> staffIDList4 = new LinkedList<Integer>();
+						staffIDList4.add(sID);
+						
 						if(old != null) 
 						{
-							getUndo().push(new UndoNode(-1, sID, old, "Edited"));
+							getUndo().push(new UndoNode(-1, staffIDList4, old, "Edited"));
 						}
 						
 					}
@@ -312,7 +327,10 @@ public class Scheduler
 					
 					if(removed != null) 
 					{
-						getUndo().push(new UndoNode(-1, idToDel, removed, "Deleted"));
+						LinkedList<Integer> staffIDList5 = new LinkedList<Integer>();
+						staffIDList5.add(idToDel);
+						
+						getUndo().push(new UndoNode(-1, staffIDList5, removed, "Deleted"));
 					}
 					
 					break;
@@ -366,100 +384,97 @@ public class Scheduler
 	public Object undo()
 	{
 		UndoNode n = getUndo().pop();
+		Staff s = getStaff().findInTree(n.getSID().get(0));
 
-		// If n is null, no item in UndoStack
-		if(n == null)
+		// If Appointment ID is negative, it doesnt exist, therefore the object is Staff
+		if(n.getAID() < 0)
 		{
-			return null;
-		}
-		else
-		{
-			Staff s = getStaff().findInTree(n.getSID());
-
-			// If AID is -1, then the stored Object is the StaffTree, as that means there is no appointment
-			if(n.getAID() == -1)
+			switch(n.getAction())
 			{
+				case "Added":
+					getStaff().delete(n.getSID().get(0));
 
-				// If staff is not in StaffTree, then it must have been deleted, so add it back
-				if(s == null) {
-					getStaff().addTree((Staff)n.getObject());
+					getRedo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
+					return s;
+
+				case "Deleted":
+					getStaff().addTree((Staff) n.getObject());
 
 					getRedo().push(new UndoNode(-1, n.getSID(), n.getObject(), "Added"));
 					return n;
-				}
-				// Values of Staff must have been changed, so change them back.
-				else
-				{
-					// If all fields have the same values, then the previous operation was an add of the current object to tree, so delete it
-					if(s.getName().equals(((Staff) n.getObject()).getName()) && s.getOffice().equals(((Staff) n.getObject()).getOffice()))
-					{
-						getStaff().delete(n.getSID());
 
-						getRedo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
-						return s;
-					}
-					else
-					{
-						// Set constructor of Staff to duplicate values
-						Staff toReturn = new Staff(s);
+				case "Edited":
+					Staff toReturn = new Staff(s);
 
-						s.setName( ((Staff) n.getObject()).getName());
-						s.setOffice( ((Staff) n.getObject()).getOffice());
+					s.setName(((Staff) n.getObject()).getName());
+					s.setOffice(((Staff) n.getObject()).getOffice());
 
-						getRedo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
-						return toReturn;
-					}
+					getRedo().push(new UndoNode(-1, n.getSID(), toReturn, "Edited"));
+					return toReturn;
 
-				}
+				default:
+					break;
 			}
-			else
-			{
-				// If stored object is an appointment.
-				Appointment a = s.searchAppointment(n.getAID());
+		}
+		else
+		{
+			Appointment a = s.searchAppointment(n.getAID());
 
-				// If appointment is null, it has been deleted
-				if(a == null)
-				{
+			switch(n.getAction())
+			{
+				case "Added":
+					deleteAppointment(s.getId(), a.getID());
+					
+					LinkedList<Integer> staffIDList = new LinkedList<Integer>();
+					staffIDList.add(s.getId());
+
+					getRedo().push( new UndoNode(a.getID(), staffIDList, a, "Deleted"));
+
+					return a;
+
+				case "Deleted":
+					LinkedList<Integer> staffIDList2 = n.getSID();
 					// Add it back
-					s.addAppointment((Appointment) n.getObject());
+					
+					for(int i = 0; i < staffIDList2.size(); i++) 
+					{
+						getStaff().findInTree(staffIDList2.get(i)).addAppointment((Appointment) n.getObject());
+					}
 
 					// Push newly added node to redo stack
 					getRedo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
 					return n;
-				}
-				else
-				{
-					// If Appointment is still in set, check if values math UndoStack object
 
-					if(a.getStart().compareTo(((Appointment) n.getObject()).getStart()) == 0 && a.getDuration() == ((Appointment) n.getObject()).getDuration()
-						&& a.getDescription().equals(((Appointment) n.getObject()).getDescription()) && a.getLocation().equals(((Appointment) n.getObject()).getLocation())
-						&& a.getHidden() == ((Appointment) n.getObject()).getHidden())
-
-					{
-						s.deleteAppointment(a);
-
-						getRedo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
-
-						return a;
-					}
-
+				case "Edited":
 					// Make copy of Appointment stored, to add to redo stack
-					Appointment toReturn = new Appointment(a);
+
+					Appointment toReturn2 = new Appointment(a);
+					
+					getStaff().findAll(getStaff().getRoot(), a);
+					
+					LinkedList<Appointment> allApp = getStaff().sendList();
+					LinkedList<Integer> allID = getStaff().sendListID();
 
 					// Copy values from undo stack to appointment set
-					a.setStart(((Appointment) n.getObject()).getStart());
-					a.setDuration(((Appointment) n.getObject()).getDuration());
-					a.setDescription(((Appointment) n.getObject()).getDescription());
-					a.setLocation(((Appointment) n.getObject()).getLocation());
-					a.setHidden(((Appointment) n.getObject()).getHidden());
+					for(int i = 0; i < allApp.size(); i++) 
+					{
+						allApp.get(i).setStart(((Appointment) n.getObject()).getStart());
+						allApp.get(i).setDuration(((Appointment) n.getObject()).getDuration());
+						allApp.get(i).setDescription(((Appointment) n.getObject()).getDescription());
+						allApp.get(i).setLocation(((Appointment) n.getObject()).getLocation());
+						allApp.get(i).setHidden(((Appointment) n.getObject()).getHidden());
+					}
 
 
-					getRedo().push(new UndoNode(toReturn.getID(), s.getId(), toReturn, "Edited"));
-					return toReturn;
-				}
+					getRedo().push(new UndoNode(toReturn2.getID(), allID, toReturn2, "Edited"));
+					return toReturn2;
 
+				default:
+					break;
 			}
 		}
+
+		return null;
 
 	}
 
@@ -470,7 +485,7 @@ public class Scheduler
 	public Object redo()
 	{
 		UndoNode n = getRedo().pop();
-		Staff s = getStaff().findInTree(n.getSID());
+		Staff s = getStaff().findInTree(n.getSID().get(0));
 
 		// If Appointment ID is negative, it doesnt exist, therefore the object is Staff
 		if(n.getAID() < 0)
@@ -478,7 +493,7 @@ public class Scheduler
 			switch(n.getAction())
 			{
 				case "Added":
-					getStaff().delete(n.getSID());
+					getStaff().delete(n.getSID().get(0));
 
 					getUndo().push(new UndoNode(-1, n.getSID(), s, "Deleted"));
 					return s;
@@ -495,7 +510,7 @@ public class Scheduler
 					s.setName(((Staff) n.getObject()).getName());
 					s.setOffice(((Staff) n.getObject()).getOffice());
 
-					getUndo().push(new UndoNode(-1, toReturn.getId(), toReturn, "Edited"));
+					getUndo().push(new UndoNode(-1, n.getSID(), toReturn, "Edited"));
 					return toReturn;
 
 				default:
@@ -509,15 +524,23 @@ public class Scheduler
 			switch(n.getAction())
 			{
 				case "Added":
-					s.deleteAppointment(a);
+					deleteAppointment(s.getId(), a.getID());
+					
+					LinkedList<Integer> staffIDList = new LinkedList<Integer>();
+					staffIDList.add(s.getId());
 
-					getUndo().push( new UndoNode(a.getID(), s.getId(), a, "Deleted"));
+					getUndo().push( new UndoNode(a.getID(), staffIDList, a, "Deleted"));
 
 					return a;
 
 				case "Deleted":
+					LinkedList<Integer> staffIDList2 = n.getSID();
 					// Add it back
-					s.addAppointment((Appointment) n.getObject());
+					
+					for(int i = 0; i < staffIDList2.size(); i++) 
+					{
+						getStaff().findInTree(staffIDList2.get(i)).addAppointment((Appointment) n.getObject());
+					}
 
 					// Push newly added node to redo stack
 					getUndo().push(new UndoNode(n.getAID(), n.getSID(), n.getObject(), "Added"));
@@ -525,18 +548,27 @@ public class Scheduler
 
 				case "Edited":
 					// Make copy of Appointment stored, to add to redo stack
-					Appointment toReturn = new Appointment(a);
+
+					Appointment toReturn2 = new Appointment(a);
+					
+					getStaff().findAll(getStaff().getRoot(), a);
+					
+					LinkedList<Appointment> allApp = getStaff().sendList();
+					LinkedList<Integer> allID = getStaff().sendListID();
 
 					// Copy values from undo stack to appointment set
-					a.setStart(((Appointment) n.getObject()).getStart());
-					a.setDuration(((Appointment) n.getObject()).getDuration());
-					a.setDescription(((Appointment) n.getObject()).getDescription());
-					a.setLocation(((Appointment) n.getObject()).getLocation());
-					a.setHidden(((Appointment) n.getObject()).getHidden());
+					for(int i = 0; i < allApp.size(); i++) 
+					{
+						allApp.get(i).setStart(((Appointment) n.getObject()).getStart());
+						allApp.get(i).setDuration(((Appointment) n.getObject()).getDuration());
+						allApp.get(i).setDescription(((Appointment) n.getObject()).getDescription());
+						allApp.get(i).setLocation(((Appointment) n.getObject()).getLocation());
+						allApp.get(i).setHidden(((Appointment) n.getObject()).getHidden());
+					}
 
 
-					getUndo().push(new UndoNode(toReturn.getID(), s.getId(), toReturn, "Edited"));
-					return toReturn;
+					getUndo().push(new UndoNode(toReturn2.getID(), allID, toReturn2, "Edited"));
+					return toReturn2;
 
 				default:
 					break;
@@ -707,13 +739,11 @@ public class Scheduler
 	 */
 	public Appointment newAppointment(LinkedList<Integer> staffIDs, String start, int duration, String description, String location, boolean hidden)
 	{
-		Object[] ids = staffIDs.toArray();
-		Staff[] toAdd = new Staff[staffIDs.size()];
 		Appointment newAppointment = new Appointment(start, duration, description, location, hidden);
-		for (int i = 0; i < toAdd.length; i++)
+		
+		for (int i = 0; i < staffIDs.size(); i++)
 		{
-			toAdd[i] = staff.findInTree(ids[i]);
-			toAdd[i].addAppointment(newAppointment);
+			staff.findInTree(staffIDs.get(i)).addAppointment(start, duration, description, location, hidden);
 		}
 		return newAppointment;
 	}
@@ -722,11 +752,25 @@ public class Scheduler
 	 * Will prompt for Staff ID, and then Appointment ID
 	 * @return    Deleted appointment to be added to Undo Stack
 	 */
-	public Appointment deleteAppointment(int staffID, int appointID)
+	public UndoNode deleteAppointment(int staffID, int appointID)
 	{
 		Staff toEdit = getStaff().findInTree(staffID);
 		Appointment toDelete = toEdit.searchAppointment(appointID);
-		return toEdit.deleteAppointment(toDelete);
+		
+		getStaff().findAll(getStaff().getRoot(), toDelete);
+		
+		LinkedList<Appointment> allApp = getStaff().sendList();
+		LinkedList<Integer> allID = getStaff().sendListID();
+		print("Test");
+		
+		
+		for(int i = 0; i < allApp.size(); i++) 
+		{
+			getStaff().findInTree(allID.get(i)).deleteAppointment(allApp.get(i));
+			print("Success?");
+		}
+		
+		return new UndoNode(toDelete.getID(), allID, toDelete, "Deleted");
 	}
 
 	/**
@@ -737,15 +781,26 @@ public class Scheduler
 	 */
 	public Appointment editAppointment(int staffid, int appointid, String edit, String newValue)
 	{
-		Appointment toEdit = getStaff().findInTree(staffid).searchAppointment(appointid);
-		Appointment toReturn = new Appointment(toEdit);
+		Staff toEdit = getStaff().findInTree(staffid);
+		Appointment toDelete = toEdit.searchAppointment(appointid);
+		Appointment toReturn = new Appointment(toDelete);
+		
+		getStaff().findAll(getStaff().getRoot(), toDelete);
+		
+		LinkedList<Appointment> allApp = getStaff().sendList();
+		LinkedList<Integer> allID = getStaff().sendListID();
 
 		switch(edit)
 		{
 		case "start":
 			try
-			{
-				toEdit.setStart(toEdit.getForm().parse(newValue));
+			{	
+				Date newDate = toDelete.getForm().parse(newValue);
+				for(int i = 0; i < allApp.size(); i++) 
+				{
+					allApp.get(i).setStart(newDate);
+				}
+				
 				return toReturn;
 			}
 			catch(Exception e)
@@ -756,7 +811,12 @@ public class Scheduler
 		case "duration":
 			try
 			{
-				toEdit.setDuration(Integer.parseInt(newValue));
+				int newDur = Integer.parseInt(newValue);
+				for(int i = 0; i < allApp.size(); i++) 
+				{
+					allApp.get(i).setDuration(newDur);
+				}
+				
 				return toReturn;
 			}
 			catch(Exception e)
@@ -765,13 +825,28 @@ public class Scheduler
 			}
 			break;
 		case "description":
-			toEdit.setDescription(newValue);
+			
+			for(int i = 0; i < allApp.size(); i++) 
+			{
+				allApp.get(i).setDescription(newValue);
+			}
+			
 			return toReturn;
 		case "location":
-			toEdit.setLocation(newValue);
+
+			for(int i = 0; i < allApp.size(); i++) 
+			{
+				allApp.get(i).setLocation(newValue);
+			}
+			
 			return toReturn;
 		case "hidden":
-			toEdit.setHidden(Boolean.parseBoolean(newValue));
+			boolean newBool = Boolean.parseBoolean(newValue);
+			for(int i = 0; i < allApp.size(); i++) 
+			{
+				allApp.get(i).setHidden(newBool);
+			}
+			
 			return toReturn;
 		default:
 			break;

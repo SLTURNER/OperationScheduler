@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 /**
  * This is the node in the stack of previous actions
  * @author Sean Turner
@@ -7,7 +9,7 @@
 public class UndoNode 
 {
 	int aID;
-	int sID;
+	LinkedList<Integer> sID;
 	Object obj;
 	String action;
 	UndoNode next;
@@ -18,7 +20,7 @@ public class UndoNode
 	public UndoNode() 
 	{
 		aID = 0;
-		sID = 0;
+		sID = new LinkedList<>();
 		obj = null;
 		next = null;
 	}
@@ -28,7 +30,7 @@ public class UndoNode
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
 	 */
-	public UndoNode(int a, int s, Object o) 
+	public UndoNode(int a, LinkedList<Integer> s, Object o) 
 	{
 		aID = a;
 		sID = s;
@@ -40,7 +42,7 @@ public class UndoNode
 	 * @param i    ID of staff whose diary got changed
 	 * @param o    Object changed (Staff or Diary)
 	 */
-	public UndoNode(int a, int s, Object o, String action) 
+	public UndoNode(int a, LinkedList<Integer> s, Object o, String action) 
 	{
 		aID = a;
 		sID = s;
@@ -82,7 +84,7 @@ public class UndoNode
 	 * Accessor, returns ID of staff as integer
 	 * @return    ID as integer
 	 */
-	public int getSID() 
+	public LinkedList<Integer> getSID() 
 	{
 		return sID;
 	}

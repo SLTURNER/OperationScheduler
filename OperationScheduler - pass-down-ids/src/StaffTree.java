@@ -1,5 +1,6 @@
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.LinkedList;
 import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -14,6 +15,8 @@ public class StaffTree
     private Staff root;
 
     private int count;
+    private LinkedList<Appointment> toEdit; 
+    private LinkedList<Integer> toEditID; 
     
     /**
      * Constructor for objects of class StaffTree
@@ -22,6 +25,66 @@ public class StaffTree
     public StaffTree()
     {
         root = null;
+        toEdit = new LinkedList<>();
+        toEditID = new LinkedList<>();
+    }
+    
+    /**
+     * Returns list of all appointments that match search
+     * @return    List with all appointments
+     */
+    public LinkedList<Appointment> getList() 
+    {
+    	return toEdit;
+    }
+    
+    /**
+     * Resets list
+     */
+    public void resetList() 
+    {
+    	toEdit = new LinkedList<>();
+    }
+    
+    /**
+     * Send list to parent class
+     * @return    List of appointment
+     */
+    public LinkedList<Appointment> sendList() 
+    {
+    	LinkedList<Appointment> toReturn = new LinkedList<>(getList());
+    	resetList();
+    	return toReturn;
+    	
+    }
+    
+    /**
+     * Returns list of all staff id with appointments that match search
+     * @return    List with all IDs
+     */
+    public LinkedList<Integer> getListID() 
+    {
+    	return toEditID;
+    }
+    
+    /**
+     * Resets list of IDs
+     */
+    public void resetListID() 
+    {
+    	toEditID = new LinkedList<>();
+    }
+    
+    /**
+     * Send list to parent class
+     * @return    List of IDs
+     */
+    public LinkedList<Integer> sendListID() 
+    {
+    	LinkedList<Integer> toReturn = new LinkedList<>(getListID());
+    	resetListID();
+    	return toReturn;
+    	
     }
     
     /**
@@ -290,6 +353,36 @@ public class StaffTree
         	 traverseTree(node.getRight(), type);
         	 process(node, type);
     	 }
+     }
+     
+     /**
+      * Searches for appointment in ALL staff by date and fields
+      * @param node    Current node
+      * @param search    Search parameter
+      */
+     public void findAll(Staff node, Appointment search) 
+     {
+    	 if(node != null)
+    	 {
+    		 findAll(node.getLeft(), search);
+    		 	Appointment found = node.searchAppointment(search.getStart());
+    		 	if(found != null && appEquals(search, found) == true) 
+    		 	{
+    		 		getList().add(found);
+    		 		getListID().add(node.getId());
+    		 	}
+    		 
+    		 findAll(node.getRight(), search);
+    	 }
+     }
+     
+     public boolean appEquals(Appointment og, Appointment com) 
+     {
+    	 if(og.getDuration() == com.getDuration()  && og.getHidden() == com.getHidden() && og.getDescription().equalsIgnoreCase(com.getDescription()) && og.getLocation().equalsIgnoreCase(com.getLocation())) 
+    	 {
+    		return true; 
+    	 }
+    	 return false;
      }
      
      /**
