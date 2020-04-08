@@ -1,5 +1,7 @@
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -333,7 +335,23 @@ public class Scheduler
 					break;
 				
 				case "j":
-					save(getStaff().getRoot());
+					String path = "staffTree.txt";
+				    FileOutputStream stream = null;
+				    PrintWriter writer = null;
+				    
+				    try 
+		    		{
+						stream = new FileOutputStream(path);
+					} 
+		    		catch (FileNotFoundException e) 
+		    		{
+						System.out.println(e.getMessage());
+					}
+		    		writer = new PrintWriter(stream);
+				    
+					save(getStaff().getRoot(), writer);
+					writer.close();
+					
 					undo = new Undo();
 					redo = new Undo();
 					
@@ -604,30 +622,32 @@ public class Scheduler
 	         {
 	           //Split the line into staff fields
 	           String[] staffFields = currentLine.split(",");
-	           int id = Integer.parseInt(staffFields[0]);
-	           String name = staffFields[1];
-	           String office = staffFields[2];
+	           int id = Integer.parseInt(staffFields[1]);
+	           String name = staffFields[2];
+	           String office = staffFields[3];
 	
 	           //Create a staff with the fields
 	           Staff newStaff = new Staff(name, office, id);
 	
-	           //For each appointment in the line
-	           String[] appointments = staffFields[3].split("&");
-	           for (int i = 0; i <appointments.length; i++)
+	           
+	           if (!staffFields[0].isEmpty())
 	           {
-	             //Split into appointment fields
-	             String[] appointmentFields = appointments[i].split(";");
-	             String date = appointmentFields[0];
-	             int duration = Integer.parseInt(appointmentFields[1]);
-	             String description = appointmentFields[2];
-	             String location = appointmentFields[3];
-	             boolean hidden = Boolean.parseBoolean(appointmentFields[4]);
-	
-	             //Create an appointment with the appointment fields
-	             Appointment newAppointment = new Appointment(date, duration, description, location, hidden);
-	
-	             //Add the appointment to the staff member's diary
-	             newStaff.addAppointment(newAppointment);
+	        	   //For each appointment in the line
+		           String[] appointments = staffFields[0].split("&");
+		           for (int i = 0; i <appointments.length; i++)
+		           {
+		             //Split into appointment fields
+		             String[] appointmentFields = appointments[i].split(";");
+		            
+		             String date = appointmentFields[0];
+		             int duration = Integer.parseInt(appointmentFields[1]);
+		             String description = appointmentFields[2];
+		             String location = appointmentFields[3];
+		             boolean hidden = Boolean.parseBoolean(appointmentFields[4]);
+		
+		             //Add the appointment to the staff member's diary
+		             newStaff.getDiary().addAppointment(date, duration, description, location, hidden);
+		           }
 	           }
 	
 	           //Add the new saff to the new tree
@@ -662,64 +682,46 @@ public class Scheduler
 	 *     Note: Undo and Redo stacks are NOT saved
 	 * @return    true once saved succesfully
 	 */
-	public boolean save(Staff currentStaff)
+	public boolean save(Staff currentStaff, PrintWriter writer)
 	{
-      String path = "staffTree.txt";
-	    FileOutputStream stream = null;
-	    PrintWriter writer = null;
+      
 
 	    String staffFieldDelimiter = ",";
 	    String appointmentDelimiter = "&";
 	    String appointmentFieldDelimiter = ";";
-	    
-	    if(currentStaff.getLeft() != null) 
+
+	  //If the node has a member of staff
+	    if (currentStaff != null)
 	    {
 	    	//Save the tree node to the left
-		    save(currentStaff.getLeft());
-	    }
-
-	    //If the node has a member of staff
-	    if (currentStaff != null)
-	    {	
-    		try 
-    		{
-				stream = new FileOutputStream(path);
-			} 
-    		catch (FileNotFoundException e) 
-    		{
-				System.out.println(e.getMessage());
-				return false;
-			}
-    		writer = new PrintWriter(stream);
+	    	save(currentStaff.getLeft(), writer);
 
     		//Print the id, name and office of the staff to a new line on the file
     		int id = currentStaff.getId();
     		String name = currentStaff.getName();
     		String office = currentStaff.getOffice();
-    		writer.println(id + staffFieldDelimiter + name + staffFieldDelimiter + office + staffFieldDelimiter);
+    		writer.println(staffFieldDelimiter + id + staffFieldDelimiter + name + staffFieldDelimiter + office + staffFieldDelimiter);
 
     		//For each appointment in the staff member's diary
     		ArrayList<Appointment> appointments = currentStaff.getDiary().getAppointment();
-    		for (int i = 0; i < appointments.size(); i++)
+    		if (appointments != null)
     		{
-    			//Print out the appointment data to the file
-    			writer.print(appointments.get(i).getStart() + appointmentFieldDelimiter);
-    			writer.print(appointments.get(i).getDuration() + appointmentFieldDelimiter);
-    			writer.print(appointments.get(i).getDescription() + appointmentFieldDelimiter);
-    			writer.print(appointments.get(i).getLocation() + appointmentFieldDelimiter);
-    			writer.print(appointments.get(i).getHidden() + appointmentFieldDelimiter);
-    			writer.print(appointmentDelimiter);
+	    		for (int i = 0; i < appointments.size(); i++)
+	    		{
+	    			//Print out the appointment data to the file
+	    			DateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
+	    			String start = form.format(appointments.get(i).getStart());
+	    			writer.print(start + appointmentFieldDelimiter);
+	    			writer.print(appointments.get(i).getDuration() + appointmentFieldDelimiter);
+	    			writer.print(appointments.get(i).getDescription() + appointmentFieldDelimiter);
+	    			writer.print(appointments.get(i).getLocation() + appointmentFieldDelimiter);
+	    			writer.print(appointments.get(i).getHidden() + appointmentFieldDelimiter);
+	    			writer.print(appointmentDelimiter);
+	    		}
     		}
-    		writer.close();
+    		//Save the tree node to the right
+    		save(currentStaff.getRight(), writer);
 	    }
-
-	    //Save the tree node to the right
-	    if(currentStaff.getRight() != null) 
-	    {
-	    	//Save the tree node to the left
-		    save(currentStaff.getRight());
-	    }
-
 	    return true;
 	}
 
