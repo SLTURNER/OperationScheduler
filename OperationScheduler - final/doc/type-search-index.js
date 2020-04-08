@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"<Unnamed>","l":"Appointment"},{"p":"<Unnamed>","l":"Diary"},{"p":"<Unnamed>","l":"OperationScheduler"},{"p":"<Unnamed>","l":"Scheduler"},{"p":"<Unnamed>","l":"Staff"},{"p":"<Unnamed>","l":"StaffTree"},{"p":"<Unnamed>","l":"Undo"},{"p":"<Unnamed>","l":"UndoNode"}]
