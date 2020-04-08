@@ -671,13 +671,16 @@ public class Scheduler
 	    String staffFieldDelimiter = ",";
 	    String appointmentDelimiter = "&";
 	    String appointmentFieldDelimiter = ";";
-
-	    //Save the tree node to the left
-	    save(currentStaff.getLeft());
+	    
+	    if(currentStaff.getLeft() != null) 
+	    {
+	    	//Save the tree node to the left
+		    save(currentStaff.getLeft());
+	    }
 
 	    //If the node has a member of staff
 	    if (currentStaff != null)
-	    {
+	    {	
     		try 
     		{
 				stream = new FileOutputStream(path);
@@ -711,7 +714,11 @@ public class Scheduler
 	    }
 
 	    //Save the tree node to the right
-	    save(currentStaff.getRight());
+	    if(currentStaff.getRight() != null) 
+	    {
+	    	//Save the tree node to the left
+		    save(currentStaff.getRight());
+	    }
 
 	    return true;
 	}
