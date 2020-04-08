@@ -106,6 +106,7 @@ public class Scheduler
 		print("K.    Load from file");
 		print("L.    Undo previous action");
 		print("M.    Redo last undone action");
+		print("T.    Run testplan");
 		print("Z.    Exit");
 	}
 
@@ -185,12 +186,11 @@ public class Scheduler
 					int appointID = Integer.parseInt(s.nextLine());
 					
 					UndoNode deleted = deleteAppointment(staff1ID, appointID);
-					print("It gets to here?");
 					
 					if(deleted != null) 
 					{
-						getUndo().push(deleted);
-						print("But not here?");
+						
+						print("Deletion succesful");
 					}
 					else 
 					{
@@ -273,7 +273,7 @@ public class Scheduler
 					
 					if(newStaff != null) 
 					{
-						getUndo().push(new UndoNode(-1, staffIDList3, newStaff, "Added"));
+						
 					}
 					
 					break;
@@ -313,7 +313,7 @@ public class Scheduler
 						
 						if(old != null) 
 						{
-							getUndo().push(new UndoNode(-1, staffIDList4, old, "Edited"));
+							
 						}
 						
 					}
@@ -327,10 +327,7 @@ public class Scheduler
 					
 					if(removed != null) 
 					{
-						LinkedList<Integer> staffIDList5 = new LinkedList<Integer>();
-						staffIDList5.add(idToDel);
-						
-						getUndo().push(new UndoNode(-1, staffIDList5, removed, "Deleted"));
+						print("Deletion succesful");
 					}
 					
 					break;
@@ -355,6 +352,10 @@ public class Scheduler
 				case "m":
 					redo();
 					break;
+				
+				case "t":
+					testPlan();
+					break;
 					
 				case "z":
 					exit = true;
@@ -372,7 +373,7 @@ public class Scheduler
 			}
 			catch(Exception e)
 			{
-				print(e.getMessage());
+				print("Something went wrong. Please be careful when typing");
 			}
 		}
 	}
@@ -745,6 +746,7 @@ public class Scheduler
 		{
 			staff.findInTree(staffIDs.get(i)).addAppointment(start, duration, description, location, hidden);
 		}
+		getUndo().push(new UndoNode(getStaff().findInTree(staffIDs.get(0)).searchAppointment(newAppointment.getStart()).getID(), staffIDs, newAppointment, "Added"));
 		return newAppointment;
 	}
 
@@ -761,16 +763,16 @@ public class Scheduler
 		
 		LinkedList<Appointment> allApp = getStaff().sendList();
 		LinkedList<Integer> allID = getStaff().sendListID();
-		print("Test");
 		
 		
 		for(int i = 0; i < allApp.size(); i++) 
 		{
 			getStaff().findInTree(allID.get(i)).deleteAppointment(allApp.get(i));
-			print("Success?");
 		}
 		
-		return new UndoNode(toDelete.getID(), allID, toDelete, "Deleted");
+		UndoNode deleted = new UndoNode(toDelete.getID(), allID, toDelete, "Deleted");
+		getUndo().push(deleted);
+		return deleted;
 	}
 
 	/**
@@ -801,6 +803,7 @@ public class Scheduler
 					allApp.get(i).setStart(newDate);
 				}
 				
+				getUndo().push(new UndoNode(toReturn.getID(), allID, toReturn, "Edited"));
 				return toReturn;
 			}
 			catch(Exception e)
@@ -817,6 +820,7 @@ public class Scheduler
 					allApp.get(i).setDuration(newDur);
 				}
 				
+				getUndo().push(new UndoNode(toReturn.getID(), allID, toReturn, "Edited"));
 				return toReturn;
 			}
 			catch(Exception e)
@@ -839,6 +843,7 @@ public class Scheduler
 				allApp.get(i).setLocation(newValue);
 			}
 			
+			getUndo().push(new UndoNode(toReturn.getID(), allID, toReturn, "Edited"));
 			return toReturn;
 		case "hidden":
 			boolean newBool = Boolean.parseBoolean(newValue);
@@ -847,6 +852,7 @@ public class Scheduler
 				allApp.get(i).setHidden(newBool);
 			}
 			
+			getUndo().push(new UndoNode(toReturn.getID(), allID, toReturn, "Edited"));
 			return toReturn;
 		default:
 			break;
@@ -862,13 +868,16 @@ public class Scheduler
 	public Staff newStaff(String name, String office, int id)
 	{
 		Staff newStaff = getStaff().addTree(new Staff(name, office, id));
+		LinkedList<Integer> ids = new LinkedList<>();
+		ids.add(id);
 
 		if(newStaff == null)
 		{
 			return null;
 		}
 		else
-		{
+		{	
+			getUndo().push(new UndoNode(-1, ids, newStaff, "Added"));
 			return newStaff;
 		}
 
@@ -882,11 +891,15 @@ public class Scheduler
 	{
 		Staff toDelete = getStaff().findInTree(id);
 		getStaff().delete(id);
+		LinkedList<Integer> ids = new LinkedList<Integer>();
+		ids.add(id);
 
 		Staff check = getStaff().findInTree(id);
 
 		if(check == null)
-		{
+		{	
+			
+			getUndo().push(new UndoNode(-1, ids, toDelete, "Deleted"));
 			return toDelete;
 		}
 		else
@@ -904,6 +917,8 @@ public class Scheduler
 	public Staff editStaff(int id, String edit, String newValue)
 	{
 		Staff toEdit = getStaff().findInTree(id);
+		LinkedList<Integer> ids = new LinkedList<>();
+		ids.add(id);
 		if(toEdit == null)
 		{
 			System.out.println(" Staff does not exist ");
@@ -914,9 +929,13 @@ public class Scheduler
 			switch(edit) {
 				case "name":
 					toEdit.setName(newValue);
+					
+					getUndo().push(new UndoNode(-1, ids, toReturn, "Edited"));
 					return toReturn;
 				case "office":
 					toEdit.setOffice(newValue);
+					
+					getUndo().push(new UndoNode(-1, ids, toReturn, "Edited"));
 					return toReturn;
 				default:
 					break;
@@ -938,7 +957,96 @@ public class Scheduler
 	 */
 	public void testPlan()
 	{
+		print("Test 1. Create new appointment when no Staff exists (Redacted, test manually)");
+		LinkedList<Integer> ids = new LinkedList<>();
+		
+		print("Test 2. Add staff, then appointment");
+		newStaff("Iain Martin", "QMB", 133);
+		ids.clear();
+		ids.add(133);
+		newAppointment(ids, "22/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		displayAppointments();
+		
+		print("Test 3. Add a further 3 members of staff");
+		newStaff("Craig Ramsay", "QMB", 134);
+		newStaff("Michael Crabb", "QMB", 12);
+		newStaff("Jacky Visser", "QMB", 13);
+		displayStaff();
+		
+		print("Test 4. Delete a member of staff");
+		deleteStaff(13);
+		displayStaff();
+		
+		print("Test 5. Delete a further 3 members of staff");
+		deleteStaff(12);
+		deleteStaff(134);
+		deleteStaff(133);
+		displayStaff();
+		
+		print("Test 6. Add appointment to staff with no appointments");
+		newStaff("Iain Martin", "QMB", 133);
+		newAppointment(ids, "29/06/20 12:30", 120, "Lecture for AC12001", "QMB", false);
+		displayAppointments();
+		
+		print("Test 7. Invalid start date (Redacted, test manually)");
 
+		
+		print("Test 8. Appointment for multiple Staff");
+		newStaff("Craig Ramsay", "QMB", 134);
+		newStaff("Michael Crabb", "QMB", 12);
+		newStaff("Jacky Visser", "QMB", 13);
+		ids.add(134);
+		ids.add(12);
+		ids.add(13);
+		Appointment a = newAppointment(ids, "30/09/20 12:30", 120, "Lecture for MA12001", "Tower D'Arcy", false);
+		displayAppointments();
+		
+		print("Test 9. Remove appointment with multiple staff attached");
+		undo();
+		displayAppointments();
+		
+		
+		print("Test 10. Display Tasklist for a member of staff");
+		displayTasklist(133);
+		
+		print("Test 11. Add staff, then undo addition");
+		Staff allison = newStaff("Allison Pearse", "QMB", 137);
+		ids.clear();
+		ids.add(137);
+		displayStaff();
+		undo();
+		displayStaff();
+		
+		print("Test 12. Redo undone action (Add back Allison)");
+		redo();
+		displayStaff();
+		
+		print("Test 13. Add appointment for multiple staff, undo addition");
+		ids.clear();
+		ids.add(134);
+		ids.add(12);
+		ids.add(13);
+		a = newAppointment(ids, "30/09/21 12:30", 120, "Lecture for MA12001", "Tower D'Arcy", false);
+		displayAppointments();
+		undo();
+		displayAppointments();
+		
+		print("Test 14. Redo undone action (Add back removed appointments)");
+		redo();
+		displayAppointments();
+		
+		print("Test 15. Add a staff, an appointment, and an edit, undo 3x");
+		ids.clear();
+		ids.add(3);
+		allison = newStaff("Alexander Russel", "Fulton Building", 3);
+		a = newAppointment(ids, "30/07/21 12:30", 120, "Lecture for MA11001", "Tower D'Arcy", false);
+		editAppointment(3, 1, "office", "The Moon");
+		displayTasklist(3);
+		undo();
+		undo();
+		undo();
+		displayStaff();
+		
 	}
 
 
