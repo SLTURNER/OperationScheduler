@@ -1,3 +1,6 @@
+import java.util.Date;
+import java.util.Set;
+
 /**
  * Class for Staff
  * @author Lubo Tsenkov
@@ -190,6 +193,12 @@ public class Staff {
     	return getDiary().searchAppointment(id);
     }
     
+    public Appointment searchAppointment(Date start) 
+    {
+    	String search = start.toString();
+    	return getDiary().searchAppointmentByString(search);
+    }
+    
     /**
      *  Adds appointment by node to Diary
      * @param toAdd    New node
@@ -205,6 +214,11 @@ public class Staff {
     	return getDiary().deleteAppointment(toDelete.getStart());
     }
     
+    public Appointment deleteAppointment(Date start) 
+    {
+    	return getDiary().deleteAppointment(start);
+    }
+    
     /**
      * Adds new appointment to Diary
      * @param date    Start date
@@ -214,9 +228,9 @@ public class Staff {
      * @param hidden    Is task or appointment
      * @return    New appointment
      */
-    public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden) 
+    public Appointment addAppointment(String date, int duration, String description, String location, boolean hidden, Set<Integer> staff) 
     {
-    	Appointment added = getDiary().addAppointment(date, duration, description, location, hidden);
+    	Appointment added = getDiary().addAppointment(date, duration, description, location, hidden, staff);
     	
     	return getDiary().searchAppointment(added.getID());
     }

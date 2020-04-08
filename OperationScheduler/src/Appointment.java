@@ -1,4 +1,5 @@
 import java.util.Date;
+import java.util.Set;
 import java.text.SimpleDateFormat;
 
 
@@ -18,6 +19,7 @@ public class Appointment {
 	private String location;
 	private SimpleDateFormat form = new SimpleDateFormat("dd/MM/yy HH:mm");
 	private int id;
+	private Set<Integer> staff;
 	
 	// Used to differentiate between tasks and appointments
 	private boolean hidden;
@@ -28,7 +30,7 @@ public class Appointment {
 	 * @param date - the start date and time of appointment
 	 * @param duration - length of appointment in minutes
 	 */
-	public Appointment(String date,  int duration, String description, String location, boolean hidden)
+	public Appointment(String date,  int duration, String description, String location, boolean hidden, Set<Integer> staff)
 	{
 		start = new Date();
 		end = new Date();
@@ -49,6 +51,7 @@ public class Appointment {
 		this.description = description;
 		this.location = location;
 		this.hidden = hidden;
+		this.staff = staff;
 	}
 	
 	/**
@@ -65,6 +68,7 @@ public class Appointment {
 		this.description = temp.getDescription();
 		this.location = temp.getLocation();
 		this.hidden = temp.getHidden();
+		this.staff = temp.getSet();
 	}
 	
 	
@@ -85,6 +89,15 @@ public class Appointment {
 	public void setLocation(String location)
 	{
 		this.location = location;
+	}
+	
+	/**
+	 * Gets set of staff with same appointment
+	 * @return
+	 */
+	public Set<Integer> getSet() 
+	{
+		return staff;
 	}
 	
 	/**
